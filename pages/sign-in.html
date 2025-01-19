@@ -76,7 +76,7 @@
                 <li class="nav-item">
                   <a class="nav-link me-2" href="../pages/sign-in.html">
                     <i class="fas fa-key opacity-6 text-dark me-1"></i>
-                    Sign In
+                    登入
                   </a>
                 </li>
               </ul>
@@ -104,7 +104,7 @@
             <div class="card z-index-0 fadeIn3 fadeInBottom">
               <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                 <div class="bg-gradient-dark shadow-dark border-radius-lg py-3 pe-1">
-                  <h4 class="text-white font-weight-bolder text-center mt-2 mb-0">Sign in</h4>
+                  <h4 class="text-white font-weight-bolder text-center mt-2 mb-0">登入</h4>
                   <div class="row mt-3">
                     <div class="col-2 text-center ms-auto">
                       <a class="btn btn-link px-3" href="javascript:;">
@@ -139,7 +139,7 @@
                     <label class="form-check-label mb-0 ms-3" for="rememberMe">Remember me</label>
                   </div>
                   <div class="text-center">
-                    <button type="button" class="btn bg-gradient-dark w-100 my-4 mb-2">Sign in</button>
+                    <button id="signInBtn" type="button" class="btn bg-gradient-dark w-100 my-4 mb-2">Sign in</button>
                   </div>
                   <p class="mt-4 text-sm text-center">
                     Don't have an account?
@@ -203,6 +203,25 @@
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
+  <script>
+    // 绑定点击事件
+    document.getElementById('signInBtn').addEventListener('click', function () {
+      // 设置默认的 email 和 password
+      const defaultEmail = "default@example.com";
+      const defaultPassword = "password123";
+
+      // 获取用户输入的 email 和 password
+      const emailInput = document.querySelector('input[type="email"]');
+      const passwordInput = document.querySelector('input[type="password"]');
+
+      // 将输入重置为默认值（可选，视需求决定是否需要保留用户输入）
+      emailInput.value = defaultEmail;
+      passwordInput.value = defaultPassword;
+
+      // 直接跳转到指定页面
+      window.location.href = "../pages/dashboard.html";
+    });
+  </script>
 </body>
 
 </html>
