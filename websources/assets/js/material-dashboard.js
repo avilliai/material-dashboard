@@ -110,7 +110,6 @@ if (document.querySelector('.fixed-plugin')) {
   var fixedPluginCloseButton = document.querySelectorAll('.fixed-plugin-close-button');
   var navbar = document.getElementById('navbarBlur');
   var navbarVertical = document.getElementById('sidenav-main');
-  var sideNavButton = document.querySelectorAll('.nav-link .sidenav-toggler-inner');
   var buttonNavbarFixed = document.getElementById('navbarFixed');
 
   if (fixedPluginButton) {
@@ -139,10 +138,10 @@ if (document.querySelector('.fixed-plugin')) {
     }
   })
 
+  //边栏折叠
   document.querySelector('body').onclick = function (e) {
-    if (e.target != sideNavButton && e.target.closest('.g-sidenav-pinned .sidenav') != navbarVertical) {
-      // toggleSidenav();
-      alert("check");
+    if (e.target.closest('#iconNavbarSidenav') != iconNavbarSidenav && e.target.closest('.g-sidenav-pinned .sidenav') != navbarVertical) {
+      document.body.classList.remove('g-sidenav-pinned')
     }
   }
 
