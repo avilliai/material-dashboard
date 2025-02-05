@@ -28,14 +28,15 @@
 
 let darkModeFlag = false;
 
-const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
 //检测浏览器深色模式
 function checkDarkMode() {
-  if (darkModeMediaQuery.matches) {
-    darkModeFlag = true;
-  } else {
-    darkModeFlag = false;
+  //检查本地有没有存在该值
+  const darkModeStorage = localStorage.getItem('darkMode');
+  //如果没有就存入
+  if (darkModeStorage === null) {
+    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    darkModeMediaQuery.matches ? darkModeFlag = true : darkModeFlag = false;
+    localStorage.setItem('darkMode',darkModeFlag);
   }
   darkMode(darkModeFlag);
 }
@@ -43,18 +44,18 @@ function checkDarkMode() {
 //主题切换
 function changeTheme() {
   darkModeFlag = !darkModeFlag;
+  localStorage.setItem('darkMode',darkModeFlag);
   darkMode(darkModeFlag);
 }
 
-// 初始检测
-// checkDarkMode();
+//初始检测
+checkDarkMode();
 
-//监听
-// darkModeMediaQuery.addEventListener('change', checkDarkMode);
 
 // Verify navbar blur on scroll
 if (document.getElementById('navbarBlur')) {
-  navbarBlurOnScroll('navbarBlur');
+  //顶部导航栏离开页面后都会飘起来
+  // navbarBlurOnScroll('navbarBlur');
 }
 
 // initialization of Tooltips
@@ -290,6 +291,7 @@ function navbarMinimize(el) {
 }
 
 // Navbar blur on scroll
+
 function navbarBlurOnScroll(id) {
   const navbar = document.getElementById(id);
   let navbarScrollActive = navbar ? navbar.getAttribute("data-scroll") : false;
@@ -367,6 +369,8 @@ function navbarBlurOnScroll(id) {
     }
   }
 }
+
+
 
 // Debounce Function
 // Returns a function, that, as long as it continues to be invoked, will not

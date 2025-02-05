@@ -141,9 +141,9 @@ def save_yaml(file_path, data):
 
 def has_eridanus():
     """判断是否安装了Eridanus"""
-    file_path = YAML_FILES["settings.yaml"]
+    file_path = YAML_FILES["test"]
     #测试不存在的路径
-    file_path = "114514"
+    # file_path = "114514"
     if os.path.exists(file_path):
         return True
     else:
