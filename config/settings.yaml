@@ -24,7 +24,7 @@ basic_plugin:
     soutu_bot: true  #搜本子
 JMComic:            #禁漫相关功能设置
   previewPages: 6  #验车预览页数
-  autoClearPDF: true #下载后自动清除pdf
+  autoClearPDF: false #下载后自动清除pdf
   savePath: "data/pictures/benzi"  #下载为pdf的默认保存路径
 asmr:
   with_url: false  #是否附带原始音频url

@@ -63,7 +63,7 @@ function createEditorElements(data, comments, parent, path = "") {
 
   for (const [key, value] of Object.entries(data)) {
     const li = document.createElement('li');
-    li.classList.add('list-group-item', 'd-flex', 'flex-column', 'align-items-start', 'mb-3','border','rounded-3','me-1');
+    li.classList.add('list-group-item', 'd-flex', 'flex-column', 'align-items-start', 'mb-2','border','rounded-3','me-1');
 
     // 构建当前键的完整路径，只针对 data
     const currentPath = path ? `${path}.${key}` : key;
@@ -100,7 +100,7 @@ function createEditorElements(data, comments, parent, path = "") {
 
     // 创建一个 div 容器来包裹 input
     const inputCommentContainer = document.createElement('div');
-    inputCommentContainer.classList.add('d-flex', 'align-items-center', 'flex-grow-1', 'w-100','mt-1');
+    inputCommentContainer.classList.add('d-flex', 'align-items-center', 'flex-grow-1', 'w-100','mt-1','markkk');
 
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       if (typeof value === 'boolean') {
@@ -108,7 +108,7 @@ function createEditorElements(data, comments, parent, path = "") {
         //bootstrap样式
         //<input class="form-check-input mt-1 ms-auto" type="checkbox">
         const toggle_container = document.createElement('div');
-        toggle_container.className = "form-check form-switch ps-0 is-filled ms-2 my-2";
+        toggle_container.classList.add('form-check','form-switch','ps-0','is-filled','ms-1','my-1');
         const toggle = document.createElement('input');
         toggle.classList.add('form-check-input','ms-auto');
         toggle.type="checkbox";
@@ -145,17 +145,20 @@ function createEditorElements(data, comments, parent, path = "") {
 
         // inputCommentContainer.appendChild(select);
       } else {
+        const itemContainer = document.createElement('div');
+        itemContainer.classList.add('d-flex', 'align-items-center', 'mt-1','input-group','input-group-outline');
         // 创建一个 input 元素
         const input = document.createElement('input');
         input.type = typeof value === 'number' ? 'number' : 'text';
         input.value = value;
         input.classList.add('form-control', 'form-control-sm');
-
+        itemContainer.appendChild(input);
+        inputCommentContainer.appendChild(itemContainer);
         // 添加事件监听器，当值改变时更新数据
         input.addEventListener('input', (e) => {
           updateData(yamlData.data, currentPath, typeof value === 'number' ? parseFloat(e.target.value) : e.target.value);
         });
-        inputCommentContainer.appendChild(input);
+
       }
       li.appendChild(inputCommentContainer);
 
@@ -164,19 +167,20 @@ function createEditorElements(data, comments, parent, path = "") {
       listContainer.classList.add('flex-grow-1', 'w-100');
       value.forEach((item, index) => {
         const itemContainer = document.createElement('div');
-        itemContainer.classList.add('d-flex', 'align-items-center', 'mt-2');
+        itemContainer.classList.add('d-flex', 'align-items-center', 'mt-1','input-group','input-group-outline');
 
         const itemInput = document.createElement('input');
         itemInput.type = 'text';
         itemInput.value = item;
-        itemInput.classList.add('form-control', 'form-control-sm');
+        itemInput.classList.add('form-control','form-control-sm');
         itemInput.addEventListener('input', (e) => {
           updateData(yamlData.data, `${currentPath}[${index}]`, e.target.value);
         });
 
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
-        deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'ms-2');
+        deleteButton.type="button";
+        deleteButton.classList.add('btn', 'btn-danger','btn-sm');
         deleteButton.addEventListener('click', () => {
           value.splice(index, 1);
           renderYamlEditor(yamlData, yamlEditor); // 重新渲染以反映更改

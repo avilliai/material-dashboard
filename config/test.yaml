@@ -1,10 +1,16 @@
-bool1: true  #boolean
-bool2: false  #boolean
+bool1: false #boolean
+bool2: true   #boolean
 noquote1: 76786578     #num
 noquote2: abc  #str
 withquote: "changed"      #str
+list:
+- first
+- 请https://dashboard.sightengine.com/api-credentials
+- "1234"
+- "5678"
+- "90234345253gggggggpppqqqabABCDEGGHJKL设置1234567890"
 parent: #parent
-  bool1: false #boolean
+  bool1: true  #boolean
   bool2: false  #boolean
   noquote1: 666  #num
   noquote2: abc  #str
