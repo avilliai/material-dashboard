@@ -4,10 +4,10 @@ llm:
   func_calling: false #是否开启函数调用功能
   prefix:
   - "测试机"
-  aiReplyCore: true   #ai回复核心，将优化其他功能回复表现
+  aiReplyCore: false  #ai回复核心，将优化其他功能回复表现
   enable_proxy: false
   max_history_length: 100 #最大聊天记录条数
-  Quote: true  #回复时是否引用
+  Quote: false #回复时是否引用
   focus_time: 1  #单次触发对话后持续有效时间
   语音回复几率: 30
   语音回复附带文本: false
@@ -62,6 +62,7 @@ ai绘画:
   sd审核和反推api: '' # 如果你的sd有反推插件https://github.com/spawner1145/stable-diffusion-webui-wd14-tagger.git，可以直接使用你的sdurl的api
   nai_key:
   - ''
+  - "1234567890"
 sightengine:       #ai创作图片鉴别，自己去申请https://dashboard.sightengine.com/api-credentials
   api_user: ''
   api_secret: ''

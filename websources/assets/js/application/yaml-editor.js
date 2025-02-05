@@ -1,24 +1,58 @@
 // const BASE_URL = 'http://localhost:5007'; // Flask 后端的地址,改用相对路径
-const yamlFileSelect = document.getElementById('yamlFileSelect');
+// const yamlFileSelect = document.getElementById('yamlFileSelect');
 const yamlEditor = document.getElementById('yamlEditor');
 const saveButton = document.getElementById('saveYaml');
-let yamlData = {};
+// 获取下拉菜单元素
+const dropdownMenu = document.querySelector('.dropdown-menu');
+// 获取下拉菜单按钮元素
+const dropdownButton = document.getElementById('dropdownMenuButton');
+// let yamlData = {};
 let currentFile = '';
 
-// Load YAML files from the backend
+
 async function fetchYamlFiles() {
   const response = await fetch(`./api/files`);
   const result = await response.json();
   if (result.files) {
-    yamlFileSelect.innerHTML = result.files.map(file =>
-      `<option value="${file}" ${file === 'basic_config.yaml' ? 'selected' : ''}>${file}</option>`
-    ).join('');
-    currentFile = yamlFileSelect.value;
-    loadYamlFile(currentFile);
+    result.files.forEach(file => {
+      // 创建下拉菜单选项
+      const listItem = document.createElement('li');
+      const item = document.createElement('a');
+      item.classList.add('dropdown-item');
+      //貌似都喜欢用这个占位
+      item.href = 'javascript:;';
+      item.textContent = file;
+      item.addEventListener('click', function (event) {
+        event.preventDefault();
+        // 更新下拉菜单按钮文本
+        dropdownButton.textContent = file;
+        currentFile = file;
+        // 加载选中的yaml文件
+        loadYamlFile(currentFile);
+      });
+      listItem.appendChild(item);
+      dropdownMenu.appendChild(listItem);
+    });
   } else {
     showAlert('alert-danger', 'YAML列表加载失败');
   }
 }
+
+
+// Load YAML files from the backend
+// async function fetchYamlFiles() {
+//   const response = await fetch(`./api/files`);
+//   const result = await response.json();
+//   if (result.files) {
+//     yamlFileSelect.innerHTML = result.files.map(file =>
+//       `<option value="${file}" ${file === 'basic_config.yaml' ? 'selected' : ''}>${file}</option>`
+//     ).join('');
+//     currentFile = yamlFileSelect.value;
+//     loadYamlFile(currentFile);
+//   } else {
+//     showAlert('alert-danger', 'YAML列表加载失败');
+//   }
+// }
 
 async function loadYamlFile(fileName) {
   const response = await fetch(`./api/load/${fileName}`);
@@ -63,7 +97,7 @@ function createEditorElements(data, comments, parent, path = "") {
 
   for (const [key, value] of Object.entries(data)) {
     const li = document.createElement('li');
-    li.classList.add('list-group-item', 'd-flex', 'flex-column', 'align-items-start', 'mb-2', 'border', 'rounded-3', 'me-1');
+    li.classList.add('list-group-item', 'd-flex', 'flex-column', 'align-items-start', 'mb-3', 'border', 'rounded-3', 'me-1');
 
     // 构建当前键的完整路径，只针对 data
     const currentPath = path ? `${path}.${key}` : key;
@@ -73,7 +107,7 @@ function createEditorElements(data, comments, parent, path = "") {
     keyContainer.classList.add('d-flex', 'align-items-center', 'w-100'); // 添加 w-100 使其宽度撑满
     const keyLabel = document.createElement('h5');
     keyLabel.textContent = `${key}:`;
-    keyLabel.classList.add('me-2','mb-0');
+    keyLabel.classList.add('me-2', 'mb-0');
     keyContainer.appendChild(keyLabel);
 
     // 使用 data 的路径查找注释
@@ -100,7 +134,7 @@ function createEditorElements(data, comments, parent, path = "") {
 
     // 创建一个 div 容器来包裹 input
     const inputCommentContainer = document.createElement('div');
-    inputCommentContainer.classList.add('d-flex', 'align-items-center', 'flex-grow-1', 'w-100', 'mt-1', 'markkk');
+    inputCommentContainer.classList.add('d-flex', 'align-items-center', 'flex-grow-1', 'w-100', 'mt-1');
 
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       if (typeof value === 'boolean') {
@@ -243,10 +277,10 @@ function updateData(data, path, newValue) {
   }
 }
 
-yamlFileSelect.addEventListener('change', (e) => {
-  currentFile = e.target.value;
-  loadYamlFile(currentFile);
-});
+// yamlFileSelect.addEventListener('click', (e) => {
+//   currentFile = e.target.textContent;
+//   loadYamlFile(currentFile);
+// });
 
 saveButton.addEventListener('click', saveYamlFile);
 

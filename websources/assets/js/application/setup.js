@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
           const listItem = document.createElement('li');
           const link = document.createElement('a');
           link.classList.add('dropdown-item');
-          link.href = '#';
+          link.href = 'javascript:;';
           link.textContent = source;
           link.addEventListener('click', function (event) {
             event.preventDefault();
