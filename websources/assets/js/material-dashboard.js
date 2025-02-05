@@ -31,20 +31,24 @@ let darkModeFlag = false;
 //检测浏览器深色模式
 function checkDarkMode() {
   //检查本地有没有存在该值
-  const darkModeStorage = localStorage.getItem('darkMode');
+  let darkModeStorage = localStorage.getItem('darkMode');
   //如果没有就存入
   if (darkModeStorage === null) {
     const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     darkModeMediaQuery.matches ? darkModeFlag = true : darkModeFlag = false;
-    localStorage.setItem('darkMode',darkModeFlag);
+    localStorage.setItem('darkMode', darkModeFlag);
   }
-  darkMode(darkModeFlag);
+  else {
+    darkMode(darkModeStorage === 'true');
+  }
 }
 
 //主题切换
 function changeTheme() {
+  let darkModeFlag = localStorage.getItem('darkMode') === 'true';
+  //取反
   darkModeFlag = !darkModeFlag;
-  localStorage.setItem('darkMode',darkModeFlag);
+  localStorage.setItem('darkMode', darkModeFlag);
   darkMode(darkModeFlag);
 }
 
@@ -54,7 +58,7 @@ checkDarkMode();
 
 // Verify navbar blur on scroll
 if (document.getElementById('navbarBlur')) {
-  //顶部导航栏离开页面后都会飘起来
+  //顶部导航栏离开页面后都会飘起来,不管是不是设置fixed，直接注释掉了
   // navbarBlurOnScroll('navbarBlur');
 }
 
