@@ -25,14 +25,17 @@ async function fetchYamlFiles() {
       item.addEventListener('click', function (event) {
         event.preventDefault();
         // 更新下拉菜单按钮文本
-        dropdownButton.textContent = file;
         currentFile = file;
+        dropdownButton.textContent = currentFile;
         // 加载选中的yaml文件
         loadYamlFile(currentFile);
       });
       listItem.appendChild(item);
       dropdownMenu.appendChild(listItem);
     });
+    currentFile = result.files[0];
+    dropdownButton.textContent = currentFile;
+    loadYamlFile(currentFile);
   } else {
     showAlert('alert-danger', 'YAML列表加载失败');
   }
