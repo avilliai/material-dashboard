@@ -1,5 +1,5 @@
-bool1: true  #boolean
-bool2: true   #boolean
+bool1: false #boolean
+bool2: false  #boolean
 noquote1: 76786578     #num
 noquote2: abc  #str
 withquote: "changed"      #str

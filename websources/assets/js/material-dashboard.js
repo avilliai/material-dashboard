@@ -571,7 +571,6 @@ function getEventTarget(e) {
 // End tabs navigation
 
 window.onload = function () {
-  // alert("111");
   // 获取加载屏幕元素
   const loadingScreen = document.getElementById('loading-screen');
   // 添加渐出的CSS类
@@ -912,3 +911,30 @@ if (indicators) {
   sections.forEach(onSectionLeavesViewport);
 }
 
+function showAlert(type, message) {
+  const alertContainer = document.getElementById('alert-container');
+  // 创建 alert 元素
+  const alertElement = document.createElement('div');
+  alertElement.classList.add('alert', type, 'alert-dismissible', 'fade', 'show','text-white','text-sm');
+  alertElement.setAttribute('role', 'alert');
+  const alertText = document.createElement('span');
+  alertText.innerText = message;
+  alertElement.appendChild(alertText);
+  // 创建关闭按钮
+  const closeButton = document.createElement('button');
+  closeButton.classList.add('btn-close','opacity-10');
+  closeButton.setAttribute('type', 'button');
+  closeButton.setAttribute('data-bs-dismiss', 'alert');
+  closeButton.setAttribute('aria-label', 'Close');
+  closeButton.innerHTML = "<span>x</span>";
+  alertElement.appendChild(closeButton);
+  // 将 alert 元素添加到容器中
+  alertContainer.appendChild(alertElement);
+  // 2秒后渐隐,并删除 alert 元素
+  setTimeout(() => {
+    alertElement.classList.remove('show');
+    alertElement.addEventListener('transitionend', function () {
+      alertElement.remove();
+    });
+  }, 2000);
+}

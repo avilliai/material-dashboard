@@ -16,7 +16,7 @@ async function fetchYamlFiles() {
     currentFile = yamlFileSelect.value;
     loadYamlFile(currentFile);
   } else {
-    alert('Failed to fetch YAML file list.');
+    showAlert('alert-danger', 'YAML列表加载失败');
   }
 }
 
@@ -32,7 +32,7 @@ async function loadYamlFile(fileName) {
     yamlEditor.style.display = 'block';
     saveButton.style.display = 'inline-block';
   } else {
-    alert('Failed to load YAML file.');
+    showAlert('alert-danger', 'YAML加载失败');
   }
 }
 
@@ -45,9 +45,9 @@ async function saveYamlFile() {
   });
   const result = await response.json();
   if (result.message) {
-    alert('File saved successfully!');
+    showAlert('alert-success', 'YAML保存成功');
   } else {
-    alert('Failed to save YAML file.');
+    showAlert('alert-danger', 'YAML保存失败');
   }
 }
 
@@ -63,7 +63,7 @@ function createEditorElements(data, comments, parent, path = "") {
 
   for (const [key, value] of Object.entries(data)) {
     const li = document.createElement('li');
-    li.classList.add('list-group-item', 'd-flex', 'flex-column', 'align-items-start', 'mb-2','border','rounded-3','me-1');
+    li.classList.add('list-group-item', 'd-flex', 'flex-column', 'align-items-start', 'mb-2', 'border', 'rounded-3', 'me-1');
 
     // 构建当前键的完整路径，只针对 data
     const currentPath = path ? `${path}.${key}` : key;
@@ -86,7 +86,7 @@ function createEditorElements(data, comments, parent, path = "") {
       commentWithLink = commentWithLink.replace(reg, `<a class="ms-2 me-2" href="$1$2" style="text-decoration:underline dotted;" target="_blank"><span>$1$2</span></a>`).replace(/\n/g, "<br />");
       // 添加注释文本
       const commentText = document.createElement('span');
-      commentText.classList.add('text-muted', 'ms-2','me-2');
+      commentText.classList.add('text-muted', 'ms-2', 'me-2');
       commentText.style.fontSize = '0.9rem';
       commentText.style.whiteSpace = 'pre-wrap';
       commentText.innerHTML = commentWithLink;
@@ -100,7 +100,7 @@ function createEditorElements(data, comments, parent, path = "") {
 
     // 创建一个 div 容器来包裹 input
     const inputCommentContainer = document.createElement('div');
-    inputCommentContainer.classList.add('d-flex', 'align-items-center', 'flex-grow-1', 'w-100','mt-1','markkk');
+    inputCommentContainer.classList.add('d-flex', 'align-items-center', 'flex-grow-1', 'w-100', 'mt-1', 'markkk');
 
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       if (typeof value === 'boolean') {
@@ -108,14 +108,14 @@ function createEditorElements(data, comments, parent, path = "") {
         //bootstrap样式
         //<input class="form-check-input mt-1 ms-auto" type="checkbox">
         const toggle_container = document.createElement('div');
-        toggle_container.classList.add('form-check','form-switch','ps-0','is-filled','ms-1','my-1');
+        toggle_container.classList.add('form-check', 'form-switch', 'ps-0', 'is-filled', 'ms-1', 'my-1');
         const toggle = document.createElement('input');
-        toggle.classList.add('form-check-input','ms-auto');
-        toggle.type="checkbox";
-        toggle.checked=value;
+        toggle.classList.add('form-check-input', 'ms-auto');
+        toggle.type = "checkbox";
+        toggle.checked = value;
         toggle_container.appendChild(toggle);
         inputCommentContainer.appendChild(toggle_container);
-        
+
         // // 创建一个 select 元素
         // const select = document.createElement('select');
         // select.classList.add('form-select', 'form-select-sm');
@@ -139,14 +139,14 @@ function createEditorElements(data, comments, parent, path = "") {
         // 添加事件监听器，当值改变时更新数据
         toggle.addEventListener('change', (e) => {
           const value = e.target.checked;
-          console.log(data+currentPath+value);
+          console.log(data + currentPath + value);
           updateData(yamlData.data, currentPath, value);
         });
 
         // inputCommentContainer.appendChild(select);
       } else {
         const itemContainer = document.createElement('div');
-        itemContainer.classList.add('d-flex', 'align-items-center', 'mt-1','input-group','input-group-outline');
+        itemContainer.classList.add('d-flex', 'align-items-center', 'mt-1', 'input-group', 'input-group-outline');
         // 创建一个 input 元素
         const input = document.createElement('input');
         input.type = typeof value === 'number' ? 'number' : 'text';
@@ -167,20 +167,20 @@ function createEditorElements(data, comments, parent, path = "") {
       listContainer.classList.add('flex-grow-1', 'w-100');
       value.forEach((item, index) => {
         const itemContainer = document.createElement('div');
-        itemContainer.classList.add('d-flex', 'align-items-center', 'mt-1','input-group','input-group-outline');
+        itemContainer.classList.add('d-flex', 'align-items-center', 'mt-1', 'input-group', 'input-group-outline');
 
         const itemInput = document.createElement('input');
         itemInput.type = 'text';
         itemInput.value = item;
-        itemInput.classList.add('form-control','form-control-sm');
+        itemInput.classList.add('form-control', 'form-control-sm');
         itemInput.addEventListener('input', (e) => {
           updateData(yamlData.data, `${currentPath}[${index}]`, e.target.value);
         });
 
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
-        deleteButton.type="button";
-        deleteButton.classList.add('btn', 'btn-danger','btn-sm');
+        deleteButton.type = "button";
+        deleteButton.classList.add('btn', 'btn-danger', 'btn-sm');
         deleteButton.addEventListener('click', () => {
           value.splice(index, 1);
           renderYamlEditor(yamlData, yamlEditor); // 重新渲染以反映更改
@@ -249,5 +249,6 @@ yamlFileSelect.addEventListener('change', (e) => {
 });
 
 saveButton.addEventListener('click', saveYamlFile);
+
 
 fetchYamlFiles();

@@ -3948,6 +3948,9 @@ fieldset:disabled .btn {
   --bs-btn-disabled-border-color: #fb8c00;
 }
 
+.dark-version .btn-danger{
+  --bs-btn-bg: #f44335ab;
+}
 .btn-danger {
   --bs-btn-color: #0a0a0a;
   --bs-btn-bg: #F44335;
@@ -5975,7 +5978,7 @@ fieldset:disabled .btn {
   top: 0;
   right: 0;
   z-index: 2;
-  padding: 1.25rem 1rem;
+  padding: 1rem 1rem;
 }
 
 .alert-primary {
