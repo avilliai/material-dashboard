@@ -116,34 +116,34 @@ function createEditorElements(data, comments, parent, path = "") {
         toggle_container.appendChild(toggle);
         inputCommentContainer.appendChild(toggle_container);
         
-        // 创建一个 select 元素
-        const select = document.createElement('select');
-        select.classList.add('form-select', 'form-select-sm');
-        select.style.width = 'auto'; // 设置宽度为自动
+        // // 创建一个 select 元素
+        // const select = document.createElement('select');
+        // select.classList.add('form-select', 'form-select-sm');
+        // select.style.width = 'auto'; // 设置宽度为自动
 
-        // 创建 option 元素
-        const optionTrue = document.createElement('option');
-        optionTrue.value = 'true';
-        optionTrue.text = 'true';
-        optionTrue.selected = value === true;
+        // // 创建 option 元素
+        // const optionTrue = document.createElement('option');
+        // optionTrue.value = 'true';
+        // optionTrue.text = 'true';
+        // optionTrue.selected = value === true;
 
-        const optionFalse = document.createElement('option');
-        optionFalse.value = 'false';
-        optionFalse.text = 'false';
-        optionFalse.selected = value === false;
+        // const optionFalse = document.createElement('option');
+        // optionFalse.value = 'false';
+        // optionFalse.text = 'false';
+        // optionFalse.selected = value === false;
 
-        // 将 option 元素添加到 select 元素中
-        select.appendChild(optionTrue);
-        select.appendChild(optionFalse);
+        // // 将 option 元素添加到 select 元素中
+        // select.appendChild(optionTrue);
+        // select.appendChild(optionFalse);
 
         // 添加事件监听器，当值改变时更新数据
         toggle.addEventListener('change', (e) => {
           const value = e.target.checked;
           console.log(data+currentPath+value);
-          updateData(data, currentPath, value);
+          updateData(yamlData.data, currentPath, value);
         });
 
-        inputCommentContainer.appendChild(select);
+        // inputCommentContainer.appendChild(select);
       } else {
         // 创建一个 input 元素
         const input = document.createElement('input');

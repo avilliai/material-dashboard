@@ -1,28 +1,26 @@
 llm:
   model: default #选择使用的模型大类。default为自带免费模型，可选openai、gemini。
   system: "你现在是一只猫娘，你的名字是{bot_name}，我的名字是{用户}，是你的主人。"
-  func_calling: True #是否开启函数调用功能
+  func_calling: false #是否开启函数调用功能
   prefix:
-    - "测试机"
-  aiReplyCore: True   #ai回复核心，将优化其他功能回复表现
-  enable_proxy: False
+  - "测试机"
+  aiReplyCore: true   #ai回复核心，将优化其他功能回复表现
+  enable_proxy: false
   max_history_length: 100 #最大聊天记录条数
-  Quote: False #回复时是否引用
+  Quote: true  #回复时是否引用
   focus_time: 1  #单次触发对话后持续有效时间
   语音回复几率: 30
-  语音回复附带文本: True
+  语音回复附带文本: false
   文本语音同时发送: false
   recursion_limit: 10 #对话模型最大递归深度，出错时自动递归。
   openai:          #兼容所有openai标准接口。https://platform.openai.com/docs/overview
-    api_keys:   #继续像这样添加apikey
-    - YOUR_API_KEY_1
+    api_keys: ["YOUR_API_KEY_1"]       #继续像这样添加apikey
     model: gpt-4o-mini
-    quest_url: https://api.openai.com/v1/chat/completions   #完整调用地址。只填base_url不行
+    quest_url: https://api.openai.com/v1/chat/completions #完整调用地址。只填base_url不行
     temperature: 1.3
     max_tokens: 2048
   gemini:         #https://ai.google.dev/
-    api_keys:  #继续像这样添加apikey
-      - YOUR_API_KEY_1
+    api_keys: ["YOUR_API_KEY_1"] #继续像这样添加apikey
     model: gemini-2.0-flash-exp
     base_url: https://generativelanguage.googleapis.com #后面的/v1/beta什么的会自动填充
   腾讯元器:     #极其不建议用，腾子搞得玩意稀烂，而且不支持函数调用。
@@ -49,21 +47,21 @@ z_library:       #填你的zlib账号，此功能需要开启代理。
 youtube_asmr:
   send_type: file   #record或者file，record是语音，file是文件
   channels:          #频道来源。此功能需要配置proxy，并通过tools完成登录。
-    - '@emococh'
-    - '@-gabisroom-4153'
+  - '@emococh'
+  - '@-gabisroom-4153'
 today_wife:
   api:
-  - 'http://127.0.0.1:5000/today_wife'  #今日老婆的获取api，可以替换成自己的图床，可以添加多个链接
+  - 'http://127.0.0.1:5000/today_wife'
   - 'https://api.iw233.cn/api.php?sort=top'
   header: 'https://weibo.com/'          #知道的自己改，不知道的不要动
   wifePrefix: '/'                       #透群友的指令前缀
 
 ai绘画:
   sdUrl: # 你自己搭建的sd，地址，示例http://127.0.0.1:17858/（示例≠你能直接填示例用），免费云部署见文档，本地部署https://www.bilibili.com/video/BV1iM4y1y7oA/
-    - '' 
+  - ''
   sd审核和反推api: '' # 如果你的sd有反推插件https://github.com/spawner1145/stable-diffusion-webui-wd14-tagger.git，可以直接使用你的sdurl的api
-  nai_key: 
-    - ''
+  nai_key:
+  - ''
 sightengine:       #ai创作图片鉴别，自己去申请https://dashboard.sightengine.com/api-credentials
   api_user: ''
   api_secret: ''
