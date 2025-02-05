@@ -1,0 +1,17 @@
+bool1: false #boolean
+bool2: false  #boolean
+noquote1: 76786578     #num
+noquote2: abc  #str
+withquote: "changed"      #str
+parent: #parent
+  bool1: false #boolean
+  bool2: true   #boolean
+  noquote1: 666  #num
+  noquote2: abc  #str
+  withquote: "eridanus"     #str
+  third:
+    bool1: false #boolean
+    bool2: true   #boolean
+    noquote1: 222666 #num
+    noquote2: abc  #str
+    withquote: "nodude"       #str

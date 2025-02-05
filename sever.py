@@ -1,19 +1,32 @@
 import json
-
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
+from flask_socketio import SocketIO
 from ruamel.yaml import YAML, comments
+from threading import Thread
+import subprocess
 import os
 
-app = Flask(__name__)
+app = Flask(__name__,static_url_path='/assets',static_folder='websources/assets',template_folder='websources')
 CORS(app)  # 启用跨域支持
+
+#可用的git源
+REPO_SOURCES = [
+   "https://ghfast.top/https://github.com/avilliai/Eridanus.git",
+   "https://mirror.ghproxy.com/https://github.com/avilliai/Eridanus",
+   "https://github.moeyy.xyz/https://github.com/avilliai/Eridanus",
+   "https://github.com/avilliai/Eridanus.git",
+   "https://gh.llkk.cc/https://github.com/avilliai/Eridanus.git",
+   "https://gitclone.com/https://github.com/avilliai/Eridanus.git"
+]
 
 # 文件路径配置
 YAML_FILES = {
-    "basic_config.yaml": "config/basic_config.yaml",
-    "api.yaml": "config/api.yaml",
-    "settings.yaml": "config/settings.yaml",
-    "controller.yaml": "config/controller.yaml"
+    "test" : "config/test.yaml",
+    # "basic_config.yaml": "config/basic_config.yaml",
+    # "api.yaml": "config/api.yaml",
+    # "settings.yaml": "config/settings.yaml",
+    # "controller.yaml": "config/controller.yaml"
 }
 
 # 初始化 YAML 解析器（支持注释）
@@ -22,6 +35,7 @@ yaml.preserve_quotes = True
 """
 新旧数据合并
 """
+
 def merge_dicts(old, new):
     for k, v in old.items():
         # 如果值是一个字典，并且键在新的yaml文件中，那么我们就递归地更新键值对
@@ -47,7 +61,7 @@ def merge_dicts(old, new):
         else:
             print(f"移除键 key: {k}, value: {v}")
 
-def conflict_file_dealter(old_data: dict, file_new='new_aiReply.yaml'):
+def conflict_file_dealer(old_data: dict, file_new='new_aiReply.yaml'):
 
     old_data=yaml.load(json.dumps(old_data))
     # 加载新的YAML文件
@@ -61,6 +75,7 @@ def conflict_file_dealter(old_data: dict, file_new='new_aiReply.yaml'):
     with open(file_new, 'w', encoding="utf-8") as file:
         yaml.dump(new_data, file)
     return True
+
 def extract_comments(data, path="", comments_dict=None):
     """
     递归提取 YAML 文件中所有注释，并用嵌套路径表示。
@@ -94,7 +109,6 @@ def extract_comments(data, path="", comments_dict=None):
 
     return comments_dict
 
-
 def load_yaml_with_comments(file_path):
     """
     加载 YAML 文件并提取数据和注释。
@@ -110,6 +124,7 @@ def load_yaml_with_comments(file_path):
         return {"data": data, "comments": comments}
     except Exception as e:
         return {"error": str(e)}
+
 def load_yaml(file_path):
     """加载 YAML 文件并返回内容及注释"""
     try:
@@ -122,8 +137,17 @@ def save_yaml(file_path, data):
 
     print(f"保存文件: {file_path}")
     print(f"数据: {data}")
-    return conflict_file_dealter(data["data"],file_path)
+    return conflict_file_dealer(data["data"], file_path)
 
+def has_eridanus():
+    """判断是否安装了Eridanus"""
+    file_path = YAML_FILES["settings.yaml"]
+    #测试不存在的路径
+    file_path = "114514"
+    if os.path.exists(file_path):
+        return True
+    else:
+        return False
 
 @app.route("/api/load/<filename>", methods=["GET"])
 def load_file(filename):
@@ -159,11 +183,33 @@ def save_file(filename):
     else:
         return jsonify(result), 500
 
+@app.route("/api/sources", methods=["GET"])
+def list_sources():
+    """列出所有可用的git源"""
+    return jsonify({"sources": list(REPO_SOURCES)})
 
 @app.route("/api/files", methods=["GET"])
 def list_files():
     """列出所有可用的 YAML 文件"""
     return jsonify({"files": list(YAML_FILES.keys())})
+
+@app.route("/api/pull", methods=["POST"])
+def pull_eridanus():
+    """从仓库拉取eridanus(未完成)"""
+    print(request.json)
+    return jsonify({"message": "success"})
+
+@app.route("/", methods=["GET"])
+def index():
+    """显示主页，后面添加登录验证（需要吗）"""
+    if has_eridanus():
+        return render_template("dashboard.html")
+    else:
+        return render_template("setup.html")
+
+@app.route("/yaml", methods=["GET"])
+def yaml_editor():
+    return render_template("yaml-editor.html")
 
 if __name__ == "__main__":
     #load_yaml("config/api.yaml")

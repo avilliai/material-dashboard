@@ -40,5 +40,8 @@
     "gulp-open": "3.0.1",
     "sass": "1.80.2"
   },
-  "homepage": "https://creative-tim.com/product/material-dashboard"
+  "homepage": "https://creative-tim.com/product/material-dashboard",
+  "dependencies": {
+    "material-dashboard": "file:"
+  }
 }

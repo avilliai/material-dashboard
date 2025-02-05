@@ -1,5 +1,5 @@
 "use strict";
-(function() {
+(function () {
   var isWindows = navigator.platform.indexOf('Win') > -1 ? true : false;
 
   if (isWindows) {
@@ -26,6 +26,32 @@
   };
 })();
 
+let darkModeFlag = false;
+
+const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+//检测浏览器深色模式
+function checkDarkMode() {
+  if (darkModeMediaQuery.matches) {
+    darkModeFlag = true;
+  } else {
+    darkModeFlag = false;
+  }
+  darkMode(darkModeFlag);
+}
+
+//主题切换
+function changeTheme() {
+  darkModeFlag = !darkModeFlag;
+  darkMode(darkModeFlag);
+}
+
+// 初始检测
+// checkDarkMode();
+
+//监听
+// darkModeMediaQuery.addEventListener('change', checkDarkMode);
+
 // Verify navbar blur on scroll
 if (document.getElementById('navbarBlur')) {
   navbarBlurOnScroll('navbarBlur');
@@ -33,7 +59,7 @@ if (document.getElementById('navbarBlur')) {
 
 // initialization of Tooltips
 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
   return new bootstrap.Tooltip(tooltipTriggerEl)
 })
 
@@ -53,7 +79,7 @@ function defocused(el) {
 
 // helper for adding on all elements multiple attributes
 function setAttributes(el, options) {
-  Object.keys(options).forEach(function(attr) {
+  Object.keys(options).forEach(function (attr) {
     el.setAttribute(attr, options[attr]);
   })
 }
@@ -81,7 +107,7 @@ if (document.querySelector('.fixed-plugin')) {
   var buttonNavbarFixed = document.getElementById('navbarFixed');
 
   if (fixedPluginButton) {
-    fixedPluginButton.onclick = function() {
+    fixedPluginButton.onclick = function () {
       if (!fixedPlugin.classList.contains('show')) {
         fixedPlugin.classList.add('show');
       } else {
@@ -91,7 +117,7 @@ if (document.querySelector('.fixed-plugin')) {
   }
 
   if (fixedPluginButtonNav) {
-    fixedPluginButtonNav.onclick = function() {
+    fixedPluginButtonNav.onclick = function () {
       if (!fixedPlugin.classList.contains('show')) {
         fixedPlugin.classList.add('show');
       } else {
@@ -100,13 +126,13 @@ if (document.querySelector('.fixed-plugin')) {
     }
   }
 
-  fixedPluginCloseButton.forEach(function(el) {
-    el.onclick = function() {
+  fixedPluginCloseButton.forEach(function (el) {
+    el.onclick = function () {
       fixedPlugin.classList.remove('show');
     }
   })
 
-  document.querySelector('body').onclick = function(e) {
+  document.querySelector('body').onclick = function (e) {
     if (e.target != fixedPluginButton && e.target != fixedPluginButtonNav && e.target.closest('.fixed-plugin .card') != fixedPluginCard) {
       fixedPlugin.classList.remove('show');
     }
@@ -272,7 +298,7 @@ function navbarBlurOnScroll(id) {
   let toggleClasses = ['shadow-none'];
 
   if (navbarScrollActive == 'true') {
-    window.onscroll = debounce(function() {
+    window.onscroll = debounce(function () {
       if (window.scrollY > scrollDistance) {
         blurNavbar();
       } else {
@@ -280,7 +306,7 @@ function navbarBlurOnScroll(id) {
       }
     }, 10);
   } else {
-    window.onscroll = debounce(function() {
+    window.onscroll = debounce(function () {
       transparentNavbar();
     }, 10);
   }
@@ -290,7 +316,7 @@ function navbarBlurOnScroll(id) {
   if (isWindows) {
     var content = document.querySelector('.main-content');
     if (navbarScrollActive == 'true') {
-      content.addEventListener('ps-scroll-y', debounce(function() {
+      content.addEventListener('ps-scroll-y', debounce(function () {
         if (content.scrollTop > scrollDistance) {
           blurNavbar();
         } else {
@@ -298,7 +324,7 @@ function navbarBlurOnScroll(id) {
         }
       }, 10));
     } else {
-      content.addEventListener('ps-scroll-y', debounce(function() {
+      content.addEventListener('ps-scroll-y', debounce(function () {
         transparentNavbar();
       }, 10));
     }
@@ -349,10 +375,10 @@ function navbarBlurOnScroll(id) {
 // leading edge, instead of the trailing.
 function debounce(func, wait, immediate) {
   var timeout;
-  return function() {
+  return function () {
     var context = this,
       args = arguments;
-    var later = function() {
+    var later = function () {
       timeout = null;
       if (!immediate) func.apply(context, args);
     };
@@ -364,17 +390,17 @@ function debounce(func, wait, immediate) {
 };
 
 // initialization of Toasts
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   var toastElList = [].slice.call(document.querySelectorAll(".toast"));
 
-  var toastList = toastElList.map(function(toastEl) {
+  var toastList = toastElList.map(function (toastEl) {
     return new bootstrap.Toast(toastEl);
   });
 
   var toastButtonList = [].slice.call(document.querySelectorAll(".toast-btn"));
 
-  toastButtonList.map(function(toastButtonEl) {
-    toastButtonEl.addEventListener("click", function() {
+  toastButtonList.map(function (toastButtonEl) {
+    toastButtonEl.addEventListener("click", function () {
       var toastToTrigger = document.getElementById(toastButtonEl.dataset.target);
 
       if (toastToTrigger) {
@@ -390,7 +416,7 @@ document.addEventListener("DOMContentLoaded", function() {
 var total = document.querySelectorAll('.nav-pills');
 
 function initNavs() {
-  total.forEach(function(item, i) {
+  total.forEach(function (item, i) {
     var moving_div = document.createElement('div');
     var first_li = item.querySelector('li:first-child .nav-link');
     var tab = first_li.cloneNode();
@@ -407,13 +433,13 @@ function initNavs() {
     moving_div.style.transform = 'translate3d(0px, 0px, 0px)';
     moving_div.style.transition = '.5s ease';
 
-    item.onmouseover = function(event) {
+    item.onmouseover = function (event) {
       let target = getEventTarget(event);
       let li = target.closest('li'); // get reference
       if (li) {
         let nodes = Array.from(li.closest('ul').children); // get array
         let index = nodes.indexOf(li) + 1;
-        item.querySelector('li:nth-child(' + index + ') .nav-link').onclick = function() {
+        item.querySelector('li:nth-child(' + index + ') .nav-link').onclick = function () {
           moving_div = item.querySelector('.moving-tab');
           let sum = 0;
           if (item.classList.contains('flex-column')) {
@@ -435,14 +461,14 @@ function initNavs() {
   });
 }
 
-setTimeout(function() {
+setTimeout(function () {
   initNavs();
 }, 100);
 
 // Tabs navigation resize
 
-window.addEventListener('resize', function(event) {
-  total.forEach(function(item, i) {
+window.addEventListener('resize', function (event) {
+  total.forEach(function (item, i) {
     item.querySelector('.moving-tab').remove();
     var moving_div = document.createElement('div');
     var tab = item.querySelector(".nav-link.active").cloneNode();
@@ -482,7 +508,7 @@ window.addEventListener('resize', function(event) {
   });
 
   if (window.innerWidth < 991) {
-    total.forEach(function(item, i) {
+    total.forEach(function (item, i) {
       if (!item.classList.contains('flex-column')) {
         item.classList.remove('flex-row');
         item.classList.add('flex-column', 'on-resize');
@@ -500,7 +526,7 @@ window.addEventListener('resize', function(event) {
       }
     });
   } else {
-    total.forEach(function(item, i) {
+    total.forEach(function (item, i) {
       if (item.classList.contains('on-resize')) {
         item.classList.remove('flex-column', 'on-resize');
         item.classList.add('flex-row');
@@ -521,7 +547,7 @@ window.addEventListener('resize', function(event) {
 
 // Function to remove flex row on mobile devices
 if (window.innerWidth < 991) {
-  total.forEach(function(item, i) {
+  total.forEach(function (item, i) {
     if (item.classList.contains('flex-row')) {
       item.classList.remove('flex-row');
       item.classList.add('flex-column', 'on-resize');
@@ -536,16 +562,25 @@ function getEventTarget(e) {
 
 // End tabs navigation
 
-window.onload = function() {
+window.onload = function () {
+  // alert("111");
+  // 获取加载屏幕元素
+  const loadingScreen = document.getElementById('loading-screen');
+  // 添加渐出的CSS类
+  loadingScreen.classList.add('fade-out');
+  // 动画结束后删除加载屏幕元素
+  loadingScreen.addEventListener('animationend', function () {
+    loadingScreen.remove();
+  });
   // Material Design Input function
   var inputs = document.querySelectorAll('input');
 
   for (var i = 0; i < inputs.length; i++) {
-    inputs[i].addEventListener('focus', function(e) {
+    inputs[i].addEventListener('focus', function (e) {
       this.parentElement.classList.add('is-focused');
     }, false);
 
-    inputs[i].onkeyup = function(e) {
+    inputs[i].onkeyup = function (e) {
       if (this.value != "") {
         this.parentElement.classList.add('is-filled');
       } else {
@@ -553,7 +588,7 @@ window.onload = function() {
       }
     };
 
-    inputs[i].addEventListener('focusout', function(e) {
+    inputs[i].addEventListener('focusout', function (e) {
       if (this.value != "") {
         this.parentElement.classList.add('is-filled');
       }
@@ -565,7 +600,7 @@ window.onload = function() {
   var ripples = document.querySelectorAll('.btn');
 
   for (var i = 0; i < ripples.length; i++) {
-    ripples[i].addEventListener('click', function(e) {
+    ripples[i].addEventListener('click', function (e) {
       var targetEl = e.target;
       var rippleDiv = targetEl.querySelector('.ripple');
 
@@ -577,7 +612,7 @@ window.onload = function() {
       rippleDiv.style.left = (e.offsetX - rippleDiv.offsetWidth / 2) + 'px';
       rippleDiv.style.top = (e.offsetY - rippleDiv.offsetHeight / 2) + 'px';
       rippleDiv.classList.add('ripple');
-      setTimeout(function() {
+      setTimeout(function () {
         rippleDiv.parentElement.removeChild(rippleDiv);
       }, 600);
     }, false);
@@ -602,7 +637,7 @@ if (iconSidenav) {
 function toggleSidenav() {
   if (body.classList.contains(className)) {
     body.classList.remove(className);
-    setTimeout(function() {
+    setTimeout(function () {
       sidenav.classList.remove('bg-white');
     }, 100);
     sidenav.classList.remove('bg-transparent');
@@ -643,19 +678,21 @@ window.addEventListener("load", sidenavTypeOnResize);
 function sidenavTypeOnResize() {
   let elements = document.querySelectorAll('[onclick="sidebarType(this)"]');
   if (window.innerWidth < 1200) {
-    elements.forEach(function(el) {
+    elements.forEach(function (el) {
       el.classList.add('disabled');
     });
   } else {
-    elements.forEach(function(el) {
+    elements.forEach(function (el) {
       el.classList.remove('disabled');
     });
   }
 }
 
 
+
 // Light Mode / Dark Mode
-function darkMode(el) {
+function darkMode(isDark) {
+  //ToDo: 左侧导航栏，右下角悬浮图标
   const body = document.getElementsByTagName('body')[0];
   const hr = document.querySelectorAll('div:not(.sidenav) > hr');
   const hr_card = document.querySelectorAll('div:not(.bg-gradient-dark) hr');
@@ -669,15 +706,17 @@ function darkMode(el) {
   const secondary = document.querySelectorAll('.text-secondary');
   const bg_gray_100 = document.querySelectorAll('.bg-gray-100');
   const bg_gray_600 = document.querySelectorAll('.bg-gray-600');
-  const btn_text_dark = document.querySelectorAll('.btn.btn-link.text-dark, .material-symbols-rounded.text-dark');
-  const btn_text_white = document.querySelectorAll('.btn.btn-link.text-white, .material-symbols-rounded.text-white');
+  const btn_text_dark = document.querySelectorAll('.nav-link.text-dark:not(.bg-gradient-white), select.text-dark, .btn.btn-link.text-dark, .material-symbols-rounded.text-dark');
+  const btn_text_white = document.querySelectorAll('.nav-link.text-white:not(.bg-gradient-dark), select.text-white, .btn.btn-link.text-white, .material-symbols-rounded.text-white');
   const card_border = document.querySelectorAll('.card.border');
   const card_border_dark = document.querySelectorAll('.card.border.border-dark');
 
   const svg = document.querySelectorAll('g');
 
-  if (!el.getAttribute("checked")) {
+  if (isDark) {
+    console.log("black");
     body.classList.add('dark-version');
+    // document.getElementById('sidenav-main').style.backgroundColor = 'black';
     for (var i = 0; i < hr.length; i++) {
       if (hr[i].classList.contains('dark')) {
         hr[i].classList.remove('dark');
@@ -740,9 +779,11 @@ function darkMode(el) {
     for (var i = 0; i < card_border.length; i++) {
       card_border[i].classList.add('border-dark');
     }
-    el.setAttribute("checked", "true");
+    // el.setAttribute("checked", "true");
   } else {
+    console.log("white");
     body.classList.remove('dark-version');
+    // document.getElementById('sidenav-main').style.backgroundColor = 'white';
     for (var i = 0; i < hr.length; i++) {
       if (hr[i].classList.contains('light')) {
         hr[i].classList.add('dark');
@@ -806,7 +847,7 @@ function darkMode(el) {
     for (var i = 0; i < card_border_dark.length; i++) {
       card_border_dark[i].classList.remove('border-dark');
     }
-    el.removeAttribute("checked");
+    // el.removeAttribute("checked");
   }
 };
 
@@ -839,16 +880,16 @@ if (indicators) {
           }
         });
       }, {
-        root: null,
-        rootMargin: "0px",
-        threshold: 0.75
-      }
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.75
+    }
     );
     observer.observe(section);
   };
 
   indicators.forEach((indicator) => {
-    indicator.addEventListener("click", function(event) {
+    indicator.addEventListener("click", function (event) {
       event.preventDefault();
       document
         .querySelector(this.getAttribute("href"))
@@ -862,3 +903,4 @@ if (indicators) {
 
   sections.forEach(onSectionLeavesViewport);
 }
+
