@@ -23,10 +23,10 @@ REPO_SOURCES = [
 # 文件路径配置
 YAML_FILES = {
     "test" : "config/test.yaml",
-    # "basic_config.yaml": "config/basic_config.yaml",
-    # "api.yaml": "config/api.yaml",
-    # "settings.yaml": "config/settings.yaml",
-    # "controller.yaml": "config/controller.yaml"
+    "basic_config.yaml": "config/basic_config.yaml",
+    "api.yaml": "config/api.yaml",
+    "settings.yaml": "config/settings.yaml",
+    "controller.yaml": "config/controller.yaml"
 }
 
 # 初始化 YAML 解析器（支持注释）

@@ -109,6 +109,8 @@ if (document.querySelector('.fixed-plugin')) {
   var fixedPluginCard = document.querySelector('.fixed-plugin .card');
   var fixedPluginCloseButton = document.querySelectorAll('.fixed-plugin-close-button');
   var navbar = document.getElementById('navbarBlur');
+  var navbarVertical = document.getElementById('sidenav-main');
+  var sideNavButton = document.querySelectorAll('.nav-link .sidenav-toggler-inner');
   var buttonNavbarFixed = document.getElementById('navbarFixed');
 
   if (fixedPluginButton) {
@@ -138,8 +140,9 @@ if (document.querySelector('.fixed-plugin')) {
   })
 
   document.querySelector('body').onclick = function (e) {
-    if (e.target != fixedPluginButton && e.target != fixedPluginButtonNav && e.target.closest('.fixed-plugin .card') != fixedPluginCard) {
-      fixedPlugin.classList.remove('show');
+    if (e.target != sideNavButton && e.target.closest('.g-sidenav-pinned .sidenav') != navbarVertical) {
+      // toggleSidenav();
+      alert("check");
     }
   }
 

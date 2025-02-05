@@ -73,7 +73,7 @@ function createEditorElements(data, comments, parent, path = "") {
     keyContainer.classList.add('d-flex', 'align-items-center', 'w-100'); // 添加 w-100 使其宽度撑满
     const keyLabel = document.createElement('h5');
     keyLabel.textContent = `${key}:`;
-    keyLabel.classList.add('me-2');
+    keyLabel.classList.add('me-2','mb-0');
     keyContainer.appendChild(keyLabel);
 
     // 使用 data 的路径查找注释
