@@ -1,0 +1,63 @@
+bot_config:
+  user_handle_logic: blacklist #模式。可填 blacklist, whitelist。blacklist下，屏蔽指定用户，whitelist下，只处理指定用户。
+  user_handle_logic_operate_level: 1000 #拉黑、解黑用户所需操作权限
+  group_handle_logic: blacklist #模式。可填 blacklist, whitelist。blacklist下，屏蔽指定群，whitelist下，只处理指定群。
+  group_handle_logic_operate_level: 1000 #拉黑、解黑群所需操作权限
+  邀请bot加群所需权限: 0
+  申请bot好友所需权限: 0
+api_implements: #花里胡哨
+  nudge:                #戳一戳设置。
+    counter_probability: 100  #反击概率
+    replylist:        #如果开启aiReplyCore，将不使用此处配置回复
+    - "戳我干嘛呀！"
+acg_information:
+  bangumi_query_prefix: "/" #番剧查询类命令前缀
+basic_plugin:
+  setu:
+    r18mode: true
+    gray_layer: true #是否开启灰度图功能
+  tarot:
+    lock: false #是否开启卡片锁定功能
+    mode: "blueArchive" #牌面。可填 blueArchive,bilibili,AbstractImages
+  搜图:
+    聚合搜图: true     #搜单图
+    soutu_bot: true  #搜本子
+JMComic:            #禁漫相关功能设置
+  previewPages: 6  #验车预览页数
+  autoClearPDF: true  #下载后自动清除pdf
+  savePath: "data/pictures/benzi"  #下载为pdf的默认保存路径
+asmr:
+  with_url: false  #是否附带原始音频url
+  with_file: false #是否合并并发送音频文件
+
+bili_dynamic:     #下面的设置暂不可用，请暂时不要修改
+  enable: true    #是否开启动态推送功能
+  dynamic_interval: 300 #动态推送间隔时间，单位为秒
+  screen_shot_mode: "mobile" #mobile为移动端截图，pc为PC端截图
+  draw_type: 2    #1代表用playwright（需要安装其余组件）；2代表本地Pillow绘图（有可能出错）
+  is_QQ_chek: true #是否检测qq小程序里的视频链接
+ai绘画:
+  sd画图: true
+  sd默认启动模型: 'noobaiXLNAIXL_vPred10Version.safetensors'
+  sd图片是否保存到生图端: false   #是否将生成的图片保存在webui的outputs里
+  novel_ai画图: false
+  sd画图默认分辨率: '1024,1536' # 宽,高（别带空格）
+  sd重绘默认分辨率: '1064,1064'
+  no_nsfw_groups:               #禁止色图的群号
+  - 111
+  - 222
+  - 333
+抽象检测:
+  奶龙检测: false
+  奶龙撤回: true
+  奶龙禁言: true
+  骂奶龙:
+  - 奶龙是你叠？这么喜欢发奶龙？
+  doro检测: false
+  doro撤回: true
+  doro禁言: true
+  骂doro:
+  - doro是你🐴？这么喜欢发你🐴的遗照？
+  - 粉色奶龙
+  - 唐
+  - "doro是你\uD83D\uDC34？这么喜欢发你\uD83D\uDC34的遗照？"
