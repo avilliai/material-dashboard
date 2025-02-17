@@ -1,15 +1,25 @@
+# encoding: utf-8
 import json
+from collections import OrderedDict
+
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from flask_socketio import SocketIO
+
 from ruamel.yaml import YAML, comments
 from threading import Thread
 import subprocess
 import os
 
-app = Flask(__name__,static_url_path='/assets',static_folder='websources/assets',template_folder='websources')
-CORS(app)  # 启用跨域支持
+from ruamel.yaml.scalarstring import DoubleQuotedScalarString, SingleQuotedScalarString
 
+app = Flask(__name__,static_folder="websources", static_url_path="",template_folder='websources')
+CORS(app)  # 启用跨域支持
+custom_git_path = os.path.join("environments", "MinGit", "cmd", "git.exe")
+if os.path.exists(custom_git_path):
+    git_path = custom_git_path
+else:
+    git_path = "git"
+print(f"Git path: {git_path}")
 #可用的git源
 REPO_SOURCES = [
    "https://ghfast.top/https://github.com/avilliai/Eridanus.git",
@@ -22,11 +32,10 @@ REPO_SOURCES = [
 
 # 文件路径配置
 YAML_FILES = {
-    "test" : "config/test.yaml",
-    "basic_config.yaml": "config/basic_config.yaml",
-    "api.yaml": "config/api.yaml",
-    "settings.yaml": "config/settings.yaml",
-    "controller.yaml": "config/controller.yaml"
+    "basic_config.yaml": "Eridanus/config/basic_config.yaml",
+    "api.yaml": "Eridanus/config/api.yaml",
+    "settings.yaml": "Eridanus/config/settings.yaml",
+    "controller.yaml": "Eridanus/config/controller.yaml"
 }
 
 # 初始化 YAML 解析器（支持注释）
@@ -50,7 +59,7 @@ def merge_dicts(old, new):
                 print(f"合并列表 key: {k}")
                 new[k] = list(dict.fromkeys(new[k] + v))  # 保持顺序去重
         # 如果键在新的yaml文件中，但值类型不同，以新值为准
-        elif k in new and type(v) != type(new[k]):
+        elif k in new and type(v) != type(new[k]) :
             print(f"类型冲突，保留新的值 key: {k}, old value type: {type(v)}, new value type: {type(new[k])}")
             continue  # 跳过对新值的覆盖
         # 如果键在新的yaml文件中且类型一致，则更新值
@@ -62,6 +71,7 @@ def merge_dicts(old, new):
             print(f"移除键 key: {k}, value: {v}")
 
 def conflict_file_dealer(old_data: dict, file_new='new_aiReply.yaml'):
+    print(f"冲突文件处理: {file_new}")
 
     old_data=yaml.load(json.dumps(old_data))
     # 加载新的YAML文件
@@ -77,14 +87,6 @@ def conflict_file_dealer(old_data: dict, file_new='new_aiReply.yaml'):
     return True
 
 def extract_comments(data, path="", comments_dict=None):
-    """
-    递归提取 YAML 文件中所有注释，并用嵌套路径表示。
-
-    :param data: ruamel.yaml 解析后的数据
-    :param path: 当前路径
-    :param comments_dict: 用于存储注释的字典
-    :return: 包含所有注释的字典
-    """
     if comments_dict is None:
         comments_dict = {}
 
@@ -108,20 +110,32 @@ def extract_comments(data, path="", comments_dict=None):
             extract_comments(item, new_path, comments_dict)
 
     return comments_dict
+def extract_key_order(data, path="", order_dict=None):
+    if order_dict is None:
+        order_dict = {}
 
+    if isinstance(data, comments.CommentedMap):
+        order_dict[path] = list(data.keys())  # 记录当前层级 key 的顺序
+        for key, value in data.items():
+            new_path = f"{path}.{key}" if path else key
+            extract_key_order(value, new_path, order_dict)
+
+    elif isinstance(data, comments.CommentedSeq):
+        # 对于序列，记录其位置
+        for index, item in enumerate(data):
+            new_path = f"{path}[{index}]"
+            extract_key_order(item, new_path, order_dict)
+
+    return order_dict
 def load_yaml_with_comments(file_path):
-    """
-    加载 YAML 文件并提取数据和注释。
 
-    :param file_path: YAML 文件路径
-    :return: 包含数据和注释的字典
-    """
     try:
         with open(file_path, "r", encoding="utf-8") as f:
             data = yaml.load(f)
         # 提取所有注释
+        order = extract_key_order(data)
         comments = extract_comments(data)
-        return {"data": data, "comments": comments}
+        return {"data": data, "comments": comments,"order": order}
     except Exception as e:
         return {"error": str(e)}
 
@@ -141,10 +155,9 @@ def save_yaml(file_path, data):
 
 def has_eridanus():
     """判断是否安装了Eridanus"""
-    file_path = YAML_FILES["test"]
     #测试不存在的路径
-    file_path = "114514"
-    if os.path.exists(file_path):
+    dir_path = "Eridanus"
+    if os.path.isdir(dir_path):
         return True
     else:
         return False
@@ -160,7 +173,9 @@ def load_file(filename):
         return jsonify({"error": "File not found"}), 404
 
     data_with_comments = load_yaml(file_path)
-    return jsonify(data_with_comments)
+    rtd=jsonify(data_with_comments)
+
+    return rtd
 
 @app.route("/api/save/<filename>", methods=["POST"])
 def save_file(filename):
@@ -186,7 +201,7 @@ def save_file(filename):
 @app.route("/api/sources", methods=["GET"])
 def list_sources():
     """列出所有可用的git源"""
-    return jsonify({"sources": list(REPO_SOURCES)})
+    return jsonify(list(REPO_SOURCES))
 
 @app.route("/api/files", methods=["GET"])
 def list_files():
@@ -196,21 +211,30 @@ def list_files():
 @app.route("/api/pull", methods=["POST"])
 def pull_eridanus():
     """从仓库拉取eridanus(未完成)"""
-    print(request.json)
-    return jsonify({"message": "success"})
 
-@app.route("/", methods=["GET"])
+    return jsonify({"message": "success"})
+@app.route("/api/clone", methods=["POST"])
+def clone_source():
+    data = request.get_json()
+    source_url = data.get("source")
+
+    if not source_url:
+        return jsonify({"error": "Missing source URL"}), 400
+
+    print(f"开始克隆: {source_url}")
+    os.system(f"{git_path} clone --depth 1 {source_url}")
+
+    return jsonify({"message": f"开始部署 {source_url}"})
+@app.route("/")  # 定义根路由
 def index():
-    """显示主页，后面添加登录验证（需要吗）"""
-    if has_eridanus():
-        return render_template("dashboard.html")
+    if not has_eridanus():
+        return render_template("setup.html")  # 返回 setup.html
     else:
-        return render_template("setup.html")
+        return render_template("dashboard.html") # 返回 dashboard.html
 
 @app.route("/yaml", methods=["GET"])
 def yaml_editor():
     return render_template("yaml-editor.html")
 
 if __name__ == "__main__":
-    #load_yaml("config/api.yaml")
     app.run(debug=True, host="0.0.0.0", port=5007)
