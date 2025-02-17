@@ -26,8 +26,8 @@
 
 <body class="bg-gray-200">
 
-  <div id="loading-screen">
-    <div class="loading-icon"></div>
+  <div id="loading-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 1000;">
+    <div class="loading-icon" style="border: 16px solid #f3f3f3; border-top: 16px solid #3498db; border-radius: 50%; width: 120px; height: 120px; animation: spin 2s linear infinite;"></div>
   </div>
 
   <main class="main-content  mt-0">
@@ -63,6 +63,7 @@
           </div>
         </div>
       </div>
+    </div>>
   </main>
 
   <!--   Core JS Files   -->
@@ -81,7 +82,109 @@
   </script>
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="./assets/js/material-dashboard.js?v=3.2.0"></script>
-  <script src="./assets/js/application/setup.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const dropdownMenu = document.querySelector('.dropdown-menu');
+      const dropdownButton = document.getElementById('dropdownMenuButton');
+      const submitChoiceButton = document.getElementById('submitChoice');
+      const loadingScreen = document.getElementById('loading-screen');
+
+      let selectedSource = null;
+
+      // 显示加载动画
+      function showLoading() {
+        loadingScreen.style.display = 'flex';
+      }
+
+      // 隐藏加载动画
+      function hideLoading() {
+        loadingScreen.style.display = 'none';
+      }
+
+      // 获取镜像源列表
+      function fetchSources() {
+        showLoading();
+        fetch('http://localhost:5007/api/sources')
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(sources => {
+            dropdownMenu.innerHTML = ''; // 清空下拉菜单
+            if (sources && sources.length > 0) {
+              sources.forEach(source => {
+                const listItem = document.createElement('li');
+                const linkItem = document.createElement('a');
+                linkItem.classList.add('dropdown-item');
+                linkItem.href = '#';
+                linkItem.textContent = source;
+                linkItem.addEventListener('click', function (event) {
+                  event.preventDefault(); // 阻止默认链接行为
+                  selectedSource = source;
+                  dropdownButton.textContent = source; // 更新按钮文本
+                });
+                listItem.appendChild(linkItem);
+                dropdownMenu.appendChild(listItem);
+              });
+            } else {
+              const listItem = document.createElement('li');
+              listItem.innerHTML = '<span class="dropdown-item disabled">没有可用的镜像源</span>';
+              dropdownMenu.appendChild(listItem);
+            }
+            hideLoading();
+          })
+          .catch(error => {
+            console.error('获取镜像源列表失败:', error);
+            dropdownMenu.innerHTML = '';
+            const listItem = document.createElement('li');
+            listItem.innerHTML = '<span class="dropdown-item disabled">加载镜像源失败</span>';
+            dropdownMenu.appendChild(listItem);
+            hideLoading();
+          });
+      }
+
+      // 发送选中的镜像源到 /api/clone
+      function submitSourceChoice() {
+        if (!selectedSource) {
+          alert('请先选择一个镜像源。');
+          return;
+        }
+        showLoading();
+        fetch('http://localhost:5007/api/clone', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ source: selectedSource })
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json(); // 或 response.text() 如果 API 返回文本
+          })
+          .then(data => {
+            console.log('部署请求成功:', data);
+            alert('部署请求已发送成功！请查看服务器日志获取更多信息。'); // 可以根据实际情况修改提示信息
+            hideLoading();
+          })
+          .catch(error => {
+            console.error('部署请求失败:', error);
+            alert('部署请求失败，请查看控制台错误信息。');
+            hideLoading();
+          });
+      }
+
+      // 页面加载时获取镜像源列表
+      fetchSources();
+
+      // 确定按钮点击事件
+      submitChoiceButton.addEventListener('click', submitSourceChoice);
+    });
+  </script>
+  <!-- <script src="./assets/js/application/setup.js"></script>  如果您想完全替换 `setup.js` 的内容，请删除或注释掉这行 -->
 </body>
 
 </html>
