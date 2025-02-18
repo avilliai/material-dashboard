@@ -14,6 +14,7 @@ from threading import Thread
 import subprocess
 import os
 
+
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString, SingleQuotedScalarString
 
 app = Flask(__name__,static_folder="websources", static_url_path="",template_folder='websources')
@@ -31,7 +32,7 @@ REPO_SOURCES = [
    "https://github.moeyy.xyz/https://github.com/avilliai/Eridanus",
    "https://github.com/avilliai/Eridanus.git",
    "https://gh.llkk.cc/https://github.com/avilliai/Eridanus.git",
-   "https://gitclone.com/https://github.com/avilliai/Eridanus.git"
+   "https://gitclone.com/github.com/avilliai/Eridanus.git"
 ]
 
 # 文件路径配置
@@ -60,7 +61,7 @@ def merge_dicts(old, new):
         # 如果值是列表，且新旧值都是列表，则合并并去重
         elif isinstance(v, list) and k in new and isinstance(new[k], list):
             # 合并列表并去重，保留旧列表顺序
-            new[k] = [item for item in new[k] if item in v]
+            new[k] = [item for item in v if v is not None]
         elif k in new and type(v) != type(new[k]):
             if isinstance(v, DoubleQuotedScalarString) or isinstance(v, SingleQuotedScalarString):
                 v = str(v)
@@ -227,6 +228,8 @@ def clone_source():
 
     if not source_url:
         return jsonify({"error": "Missing source URL"}), 400
+    if os.path.exists("Eridanus"):
+        return jsonify({"error": "Eridanus already exists。请删除现有Eridanus后再尝试克隆"}), 400
 
     print(f"开始克隆: {source_url}")
     os.system(f"{git_path} clone --depth 1 {source_url}")
@@ -247,7 +250,7 @@ import base64
 @app.route("/api/file2base64", methods=["POST"])
 def file_to_base64():
     """将本地文件转换为 Base64 并返回"""
-    print(request.json)
+    #print(request.json)
     data = request.json
     file_path = data.get("path")
 
@@ -349,6 +352,9 @@ if __name__ == "__main__":
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         server_thread = threading.Thread(target=run_websocket_server, daemon=True)
         server_thread.start()
-        print("WebSocket 服务器已在后台运行，不阻塞主线程")
-
+        print("WebSocket 服务器已在后台运行")
+    print("启动 Eridanus 主程序")
+    print("浏览器访问 http://localhost:5007")
+    print("浏览器访问 http://localhost:5007")
+    print("浏览器访问 http://localhost:5007")
     app.run(debug=True, host="0.0.0.0", port=5007)
