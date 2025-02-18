@@ -50,22 +50,24 @@ yaml.preserve_quotes = True
 """
 
 def merge_dicts(old, new):
+    """
+    递归合并旧数据和新数据
+    """
     for k, v in old.items():
         # 如果值是一个字典，并且键在新的yaml文件中，那么我们就递归地更新键值对
         if isinstance(v, dict) and k in new and isinstance(new[k], dict):
             merge_dicts(v, new[k])
         # 如果值是列表，且新旧值都是列表，则合并并去重
         elif isinstance(v, list) and k in new and isinstance(new[k], list):
-            if k == "api_keys":  # 特殊处理 api_keys
-                print(f"覆盖列表 key: {k}")
-                new[k] = v  # 使用旧的列表覆盖新的列表
+            # 合并列表并去重，保留旧列表顺序
+            new[k] = [item for item in new[k] if item in v]
+        elif k in new and type(v) != type(new[k]):
+            if isinstance(v, DoubleQuotedScalarString) or isinstance(v, SingleQuotedScalarString):
+                v = str(v)
+                new[k] = v
             else:
-                print(f"合并列表 key: {k}")
-                new[k] = list(dict.fromkeys(new[k] + v))  # 保持顺序去重
-        # 如果键在新的yaml文件中，但值类型不同，以新值为准
-        elif k in new and type(v) != type(new[k]) :
-            print(f"类型冲突，保留新的值 key: {k}, old value type: {type(v)}, new value type: {type(new[k])}")
-            continue  # 跳过对新值的覆盖
+                print(f"类型冲突 key: {k}, old value type: {type(v)}, new value type: {type(new[k])}")
+                continue  # 跳过对新值的覆盖
         # 如果键在新的yaml文件中且类型一致，则更新值
         elif k in new:
             print(f"更新 key: {k}, old value: {v}, new value: {new[k]}")
@@ -73,6 +75,7 @@ def merge_dicts(old, new):
         # 如果键不在新的yaml中，直接添加
         else:
             print(f"移除键 key: {k}, value: {v}")
+
 
 def conflict_file_dealer(old_data: dict, file_new='new_aiReply.yaml'):
     print(f"冲突文件处理: {file_new}")
@@ -153,8 +156,8 @@ def load_yaml(file_path):
 def save_yaml(file_path, data):
     """将数据保存回 YAML 文件"""
 
-    print(f"保存文件: {file_path}")
-    print(f"数据: {data}")
+    #print(f"保存文件: {file_path}")
+    #print(f"数据: {data}")
     return conflict_file_dealer(data["data"], file_path)
 
 def has_eridanus():
@@ -339,6 +342,8 @@ def run_websocket_server():
     loop.run_until_complete(start_server())
     loop.run_forever()
 
+#启动Eridanus并捕获输出，反馈到前端。
+#不会写，不写！
 if __name__ == "__main__":
 
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":

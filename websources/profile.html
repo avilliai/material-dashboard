@@ -1,63 +1,43 @@
+<!--
+=========================================================
+* Material Dashboard 3 - v3.2.0
+=========================================================
+
+* Product Page: https://www.creative-tim.com/product/material-dashboard
+* Copyright 2024 Creative Tim (https://www.creative-tim.com)
+* Licensed under MIT (https://www.creative-tim.com/license)
+
+* Coded by Creative Tim
+
+=========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+-->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Material Dashboard 3 - Chat</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
-  <link href="./assets/css/nucleo-icons.css" rel="stylesheet" />
-  <link href="./assets/css/nucleo-svg.css" rel="stylesheet" />
+  <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
+  <title>
+    Material Dashboard 3 by Creative Tim
+  </title>
+  <!--     Fonts and icons     -->
+  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
+  <!-- Nucleo Icons -->
+  <link href="../assets/css/nucleo-icons.css" rel="stylesheet" />
+  <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
+  <!-- Font Awesome Icons -->
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
-  <link id="pagestyle" href="./assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
-  <style>
-    .chat-container {
-      height: calc(100vh - 250px);
-      overflow-y: auto;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .message {
-      margin-bottom: 0.5rem;
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      max-width: 70%;
-      position: relative;
-    }
-
-    .user-message {
-      background-color: #4CAF50;
-      color: white;
-      align-self: flex-end;
-    }
-
-    .server-message {
-      background-color: #f0f0f0;
-      color: black;
-      align-self: flex-start;
-    }
-
-    .input-area {
-      display: flex;
-      padding: 1rem;
-      border-top: 1px solid #ddd;
-    }
-
-    .input-area input {
-      flex-grow: 1;
-      margin-right: 0.5rem;
-      padding: 0.5rem;
-      border-radius: 0.25rem;
-      border: 1px solid #ccc;
-    }
-  </style>
+  <!-- Material Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <!-- CSS Files -->
+  <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
 </head>
 
-<body class="g-sidenav-show bg-gray-100 d-flex">
-  <!-- 侧边栏 -->
+<body class="g-sidenav-show bg-gray-100">
   <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 my-2"
     id="sidenav-main">
     <div class="sidenav-header">
@@ -87,7 +67,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active bg-gradient-dark text-white" href="./virtual-reality.html">
+          <a class="nav-link" href="./virtual-reality.html">
             <i class="material-symbols-rounded opacity-5">view_in_ar</i>
             <span class="nav-link-text ms-1">Virtual Reality</span>
           </a>
@@ -102,7 +82,7 @@
           <h6 class="ps-4 ms-2 text-uppercase text-xs text-dark font-weight-bolder opacity-5">TOOLS</h6>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="./profile.html">
+          <a class="nav-link active bg-gradient-dark text-white" href="./profile.html">
             <i class="material-symbols-rounded opacity-5">person</i>
             <span class="nav-link-text ms-1">启动</span>
           </a>
@@ -117,16 +97,15 @@
           Eridanus文档</a>
       </div>
   </aside>
-
-  <!-- 主内容区 -->
-  <div class="flex-grow-1" style="margin-left: 250px; width: calc(100% - 250px);">
+  <div class="main-content position-relative max-height-vh-100 h-100">
+    <!-- Navbar -->
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-3 shadow-none border-radius-xl" id="navbarBlur"
       data-scroll="true">
       <div class="container-fluid py-1 px-3">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
             <li class="breadcrumb-item text-sm"><a class="opacity-5 text-dark" href="javascript:;">Pages</a></li>
-            <li class="breadcrumb-item text-sm text-dark active" aria-current="page">chat page</li>
+            <li class="breadcrumb-item text-sm text-dark active" aria-current="page">脚本控制</li>
           </ol>
         </nav>
         <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
@@ -249,181 +228,143 @@
         </div>
       </div>
     </nav>
-
-    <div class="container-fluid py-4">
-      <div class="row">
-        <div class="col-12">
-          <div class="card my-4">
-            <div class="card-body px-0 pb-2">
-              <div class="chat-container" id="chatContainer"></div>
-              <div class="input-area">
-                <input type="text" id="messageInput" placeholder="Type your message..." class="form-control">
-                <input type="file" id="imageInput" accept="image/*" style="display: none;">
-                <button onclick="sendMessage()" class="btn bg-gradient-primary">Send</button>
-              </div>
-            </div>
-          </div>
+    <!-- End Navbar -->
+    <div class="container-fluid px-2 px-md-4">
+      <div class="page-header min-height-300 border-radius-xl mt-4" style="background-image: url('https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');">
+        <span class="mask  bg-gradient-dark  opacity-6"></span>
+      </div>
+      <div class="card card-body mx-2 mx-md-2 mt-n6">
+  <div class="row">
+    <div class="col-12">
+      <div class="card card-plain h-100">
+        <div class="card-body p-3">
+          <h6 class="text-center">自己去点脚本</h6>
         </div>
       </div>
     </div>
   </div>
+</div>
+
+    </div>
+    <footer class="footer py-4  ">
+      <div class="container-fluid">
+        <div class="row align-items-center justify-content-lg-between">
+          <div class="col-lg-6 mb-lg-0 mb-4">
+            <div class="copyright text-center text-sm text-muted text-lg-start">
+              © <script>
+                document.write(new Date().getFullYear())
+              </script>,
+              made with <i class="fa fa-heart"></i> by
+              <a href="https://www.creative-tim.com" class="font-weight-bold" target="_blank">Creative Tim</a>
+              for a better web.
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <ul class="nav nav-footer justify-content-center justify-content-lg-end">
+              <li class="nav-item">
+                <a href="https://github.com/avilliai/Eridanus" class="nav-link text-muted" target="_blank">Eridanus</a>
+              </li>
+              <li class="nav-item">
+                <a href="https://qm.qq.com/q/Zi8ngkZFam" class="nav-link text-muted" target="_blank">交流群</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <div class="fixed-plugin">
+    <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
+      <i class="material-symbols-rounded py-2">settings</i>
+    </a>
+    <div class="card shadow-lg">
+      <div class="card-header pb-0 pt-3">
+        <div class="float-start">
+          <h5 class="mt-3 mb-0">Material UI Configurator</h5>
+          <p>See our dashboard options.</p>
+        </div>
+        <div class="float-end mt-4">
+          <button class="btn btn-link text-dark p-0 fixed-plugin-close-button">
+            <i class="material-symbols-rounded">clear</i>
+          </button>
+        </div>
+        <!-- End Toggle Button -->
+      </div>
+      <hr class="horizontal dark my-1">
+      <div class="card-body pt-sm-3 pt-0">
+        <!-- Sidebar Backgrounds -->
+        <div>
+          <h6 class="mb-0">Sidebar Colors</h6>
+        </div>
+        <a href="javascript:void(0)" class="switch-trigger background-color">
+          <div class="badge-colors my-2 text-start">
+            <span class="badge filter bg-gradient-primary" data-color="primary" onclick="sidebarColor(this)"></span>
+            <span class="badge filter bg-gradient-dark active" data-color="dark" onclick="sidebarColor(this)"></span>
+            <span class="badge filter bg-gradient-info" data-color="info" onclick="sidebarColor(this)"></span>
+            <span class="badge filter bg-gradient-success" data-color="success" onclick="sidebarColor(this)"></span>
+            <span class="badge filter bg-gradient-warning" data-color="warning" onclick="sidebarColor(this)"></span>
+            <span class="badge filter bg-gradient-danger" data-color="danger" onclick="sidebarColor(this)"></span>
+          </div>
+        </a>
+        <!-- Sidenav Type -->
+        <div class="mt-3">
+          <h6 class="mb-0">Sidenav Type</h6>
+          <p class="text-sm">Choose between different sidenav types.</p>
+        </div>
+        <div class="d-flex">
+          <button class="btn bg-gradient-dark px-3 mb-2" data-class="bg-gradient-dark" onclick="sidebarType(this)">Dark</button>
+          <button class="btn bg-gradient-dark px-3 mb-2 ms-2" data-class="bg-transparent" onclick="sidebarType(this)">Transparent</button>
+          <button class="btn bg-gradient-dark px-3 mb-2  active ms-2" data-class="bg-white" onclick="sidebarType(this)">White</button>
+        </div>
+        <p class="text-sm d-xl-none d-block mt-2">You can change the sidenav type just on desktop view.</p>
+        <!-- Navbar Fixed -->
+        <div class="mt-3 d-flex">
+          <h6 class="mb-0">Navbar Fixed</h6>
+          <div class="form-check form-switch ps-0 ms-auto my-auto">
+            <input class="form-check-input mt-1 ms-auto" type="checkbox" id="navbarFixed" onclick="navbarFixed(this)">
+          </div>
+        </div>
+        <hr class="horizontal dark my-3">
+        <div class="mt-2 d-flex">
+          <h6 class="mb-0">Light / Dark</h6>
+          <div class="form-check form-switch ps-0 ms-auto my-auto">
+            <input class="form-check-input mt-1 ms-auto" type="checkbox" id="dark-version" onclick="darkMode(this)">
+          </div>
+        </div>
+        <hr class="horizontal dark my-sm-4">
+        <a class="btn bg-gradient-info w-100" href="https://www.creative-tim.com/product/material-dashboard-pro">Free Download</a>
+        <a class="btn btn-outline-dark w-100" href="https://www.creative-tim.com/learning-lab/bootstrap/overview/material-dashboard">View documentation</a>
+        <div class="w-100 text-center">
+          <a class="github-button" href="https://github.com/creativetimofficial/material-dashboard" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star creativetimofficial/material-dashboard on GitHub">Star</a>
+          <h6 class="mt-3">Thank you for sharing!</h6>
+          <a href="https://twitter.com/intent/tweet?text=Check%20Material%20UI%20Dashboard%20made%20by%20%40CreativeTim%20%23webdesign%20%23dashboard%20%23bootstrap5&amp;url=https%3A%2F%2Fwww.creative-tim.com%2Fproduct%2Fsoft-ui-dashboard" class="btn btn-dark mb-0 me-2" target="_blank">
+            <i class="fab fa-twitter me-1" aria-hidden="true"></i> Tweet
+          </a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.creative-tim.com/product/material-dashboard" class="btn btn-dark mb-0 me-2" target="_blank">
+            <i class="fab fa-facebook-square me-1" aria-hidden="true"></i> Share
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--   Core JS Files   -->
+  <script src="../assets/js/core/popper.min.js"></script>
+  <script src="../assets/js/core/bootstrap.min.js"></script>
+  <script src="../assets/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="../assets/js/plugins/smooth-scrollbar.min.js"></script>
   <script>
-    let ws;
-    function connectWebSocket() {
-      ws = new WebSocket("ws://127.0.0.1:5008");
-      ws.onopen = () => addServerMessage("WebSocket Connected!");
-      ws.onmessage = (event) => handleServerMessage(event.data);
-      ws.onclose = () => setTimeout(connectWebSocket, 5000);
-      ws.onerror = (error) => addServerMessage(`WebSocket Error: ${error.message || 'Unknown error'}`);
-    }
-
-    function sendMessage() {
-      const input = document.getElementById("messageInput");
-      const message = input.value.trim();
-      if (message && ws && ws.readyState === WebSocket.OPEN) {
-        addUserMessage(message);
-        ws.send(JSON.stringify([{ type: "text", data: { text: message } }]));
-        input.value = "";
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+      var options = {
+        damping: '0.5'
       }
+      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
     }
-
-    function addUserMessage(message) {
-      const chatContainer = document.getElementById("chatContainer");
-      const messageDiv = document.createElement("div");
-      messageDiv.classList.add("message", "user-message");
-      messageDiv.textContent = message;
-      chatContainer.appendChild(messageDiv);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-    async function processMessage(msg) {
-  if (!msg || !msg.type) {
-    console.warn("无效消息:", msg);
-    return;
-  }
-
-  // 处理 node（递归解析）
-  if (msg.type === "node" && msg.data && msg.data.content) {
-    console.log("处理 node 消息:", msg.data);
-    for (const content of msg.data.content) {
-      await processMessage(content);
-    }
-    return;
-  }
-
-  // 处理文本消息
-  if (msg.type === "text" && msg.data?.text?.trim()) {
-    console.log("添加文本消息:", msg.data.text);
-    addServerMessage(msg.data.text);
-    return;
-  }
-
-  // 处理图片消息
-  if (msg.type === "image" && msg.data?.file) {
-    let imageUrl = msg.data.file;
-    if (imageUrl.startsWith("file://")) {
-      imageUrl = await convertFileToBase64(imageUrl);
-      if (!imageUrl) return;
-    }
-    console.log("添加图片消息:", imageUrl);
-    addImageMessage(imageUrl);
-    return;
-  }
-
-  console.warn("未知消息类型:", msg);
-}
-
-   async function handleServerMessage(rawData) {
-  try {
-    const data = JSON.parse(rawData);
-
-    if (!data.message || !data.message.params) {
-      console.warn("收到无效消息:", data);
-      return;
-    }
-
-    let messages = data.message.params.messages || data.message.params.message; // 兼容 node 和普通消息
-    if (!Array.isArray(messages)) {
-      console.warn("消息格式错误:", messages);
-      return;
-    }
-
-    for (const msg of messages) {
-      await processMessage(msg);
-    }
-  } catch (e) {
-    console.error("解析服务器消息失败:", e);
-    addServerMessage("[Invalid message format]");
-  }
-}
-
-
-
-
-
-
-    function addServerMessage(message) {
-    if (!message.trim()) return;  // 如果 message 为空或仅包含空格，则不显示
-
-    const chatContainer = document.getElementById("chatContainer");
-    const messageDiv = document.createElement("div");
-    messageDiv.classList.add("message", "server-message");
-    messageDiv.textContent = message;
-    chatContainer.appendChild(messageDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
-
-    async function convertFileToBase64(filePath) {
-    try {
-        const response = await fetch("http://127.0.0.1:5007/api/file2base64", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ path: filePath })
-        });
-
-        const data = await response.json();
-        if (data.base64) {
-            return data.base64;  // 返回 base64 数据
-        } else {
-            console.error("Error:", data.error);
-            return null;
-        }
-    } catch (error) {
-        console.error("Request failed:", error);
-        return null;
-    }
-}
-
-    async function addImageMessage(imagePath) {
-    if (imagePath.startsWith("file://")) {
-        imagePath = await convertFileToBase64(imagePath);
-        if (!imagePath) return;  // 如果转换失败，直接返回
-    }
-
-    const chatContainer = document.getElementById("chatContainer");
-    const messageDiv = document.createElement("div");
-    messageDiv.classList.add("message", "server-message");
-    messageDiv.style.maxWidth = "20%"; // 让 div 自适应但不太宽
-
-    const img = document.createElement("img");
-    img.src = imagePath;
-    img.style.width = "100%"; // 让图片填充父容器
-    img.style.borderRadius = "8px"; // 让图片更美观
-
-    messageDiv.appendChild(img);
-    chatContainer.appendChild(messageDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
-
-
-    document.addEventListener("DOMContentLoaded", connectWebSocket);
-    document.getElementById('messageInput').addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        sendMessage();
-        event.preventDefault();
-      }
-    });
   </script>
+  <!-- Github buttons -->
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
+  <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
 </body>
+
 </html>
