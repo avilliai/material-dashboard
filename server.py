@@ -250,7 +250,6 @@ import base64
 @app.route("/api/file2base64", methods=["POST"])
 def file_to_base64():
     """将本地文件转换为 Base64 并返回"""
-    #print(request.json)
     data = request.json
     file_path = data.get("path")
 
@@ -258,7 +257,7 @@ def file_to_base64():
         return jsonify({"error": "Missing file path"}), 400
 
     if file_path.startswith("file://"):
-        file_path = file_path[7:]
+        file_path = file_path[7:]  # 去掉 "file://"
 
     if not os.path.exists(file_path):
         return jsonify({"error": "File not found"}), 404
@@ -266,7 +265,22 @@ def file_to_base64():
     try:
         with open(file_path, "rb") as file:
             base64_str = base64.b64encode(file.read()).decode("utf-8")
-            return jsonify({"base64": f"data:image/jpeg;base64,{base64_str}"})
+            # 根据文件扩展名生成适当的 MIME 类型
+            file_extension = os.path.splitext(file_path)[1].lower()
+            if file_extension in ['.jpg', '.jpeg']:
+                mime_type = 'image/jpeg'
+            elif file_extension == '.png':
+                mime_type = 'image/png'
+            elif file_extension == '.gif':
+                mime_type = 'image/gif'
+            elif file_extension in ['.mp3', '.wav']:
+                mime_type = 'audio/mpeg' if file_extension == '.mp3' else 'audio/wav'
+            elif file_extension in ['.mp4', '.webm']:
+                mime_type = 'video/mp4' if file_extension == '.mp4' else 'video/webm'
+            else:
+                return jsonify({"error": "Unsupported file type"}), 400
+
+            return jsonify({"base64": f"data:{mime_type};base64,{base64_str}"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 clients = set()

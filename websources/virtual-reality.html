@@ -296,65 +296,124 @@
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
     async function processMessage(msg) {
-  if (!msg || !msg.type) {
-    console.warn("无效消息:", msg);
-    return;
-  }
+      if (!msg || !msg.type) {
+        console.warn("无效消息:", msg);
+        return;
+      }
+      let fileExtension = "";
+      if (msg.data?.file) {
+        let filePath = msg.data.file;
+        fileExtension = filePath.split('.').pop().toLowerCase(); // 获取文件后缀
+      }
+      // 处理 node（递归解析）
+      if (msg.type === "node" && msg.data && msg.data.content) {
+        console.log("处理 node 消息:", msg.data);
+        for (const content of msg.data.content) {
+          await processMessage(content);
+        }
+        return;
+      }
 
-  // 处理 node（递归解析）
-  if (msg.type === "node" && msg.data && msg.data.content) {
-    console.log("处理 node 消息:", msg.data);
-    for (const content of msg.data.content) {
-      await processMessage(content);
-    }
-    return;
-  }
-
-  // 处理文本消息
-  if (msg.type === "text" && msg.data?.text?.trim()) {
-    console.log("添加文本消息:", msg.data.text);
-    addServerMessage(msg.data.text);
-    return;
-  }
+      // 处理文本消息
+      if (msg.type === "text" && msg.data?.text?.trim()) {
+        console.log("添加文本消息:", msg.data.text);
+        addServerMessage(msg.data.text);
+        return;
+      }
 
   // 处理图片消息
-  if (msg.type === "image" && msg.data?.file) {
-    let imageUrl = msg.data.file;
-    if (imageUrl.startsWith("file://")) {
-      imageUrl = await convertFileToBase64(imageUrl);
-      if (!imageUrl) return;
-    }
-    console.log("添加图片消息:", imageUrl);
-    addImageMessage(imageUrl);
-    return;
-  }
+      if (msg.type === "image" && msg.data?.file) {
+        let imageUrl = msg.data.file;
+        if (imageUrl.startsWith("file://")) {
+          imageUrl = await convertFileToBase64(imageUrl);
+          if (!imageUrl) return;
+        }
+        console.log("添加图片消息:", imageUrl);
+        addImageMessage(imageUrl);
+        return;
+      }
+      if (msg.type === "video" || fileExtension === "mp4") {
+        let videoPath = msg.data.file;
+        if (videoPath.startsWith("file://")) {
+          videoPath = await convertFileToBase64(videoPath); // 转换为 Base64
+          if (!videoPath) return;
+        }
+        console.log("添加视频消息:", videoPath);
+        addVideoMessage(videoPath);
+        return;
+      }
+      // 处理音频消息
+      if (msg.type === "record" || ["mp3", "wav"].includes(fileExtension)) {
+        let audioPath = msg.data.file;
+        if (audioPath.startsWith("file://")) {
+          audioPath = await convertFileToBase64(audioPath); // 转换为 Base64
+          if (!audioPath) return;
+        }
+        console.log("添加音频消息:", audioPath);
+        addAudioMessage(audioPath);
+        return;
+      }
+      if (msg.type === "file") {
+        let filePath = msg.data.file;
 
-  console.warn("未知消息类型:", msg);
-}
+        // 处理 Windows 和 Linux 的 file:// 格式
+        if (filePath.startsWith("file://")) {
+            filePath = filePath.replace("file:///", "").replace("file://", "");
+        }
+
+        const fileName = decodeURIComponent(filePath.split('/').pop()); // 解析文件名
+
+        const link = document.createElement("span");
+        link.textContent = fileName; // 显示文件名
+        link.style.color = "blue";
+        link.style.textDecoration = "underline";
+        link.style.cursor = "pointer"; // 让它看起来像个可点击的链接
+
+        // 点击时，弹出提示框，并复制到剪贴板
+        link.addEventListener("click", () => {
+            navigator.clipboard.writeText(filePath).then(() => {
+                alert("文件路径已复制，请手动粘贴到浏览器打开：\n\n" + filePath);
+            }).catch(err => {
+                console.error("无法复制路径：", err);
+                alert("请手动复制文件路径：\n\n" + filePath);
+            });
+        });
+
+        const chatContainer = document.getElementById("chatContainer");
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", "server-message");
+
+        messageDiv.appendChild(link);
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    }
+    console.warn("未知消息类型:", msg);
+  }
 
    async function handleServerMessage(rawData) {
-  try {
-    const data = JSON.parse(rawData);
+    try {
+      const data = JSON.parse(rawData);
 
-    if (!data.message || !data.message.params) {
-      console.warn("收到无效消息:", data);
-      return;
-    }
+      if (!data.message || !data.message.params) {
+        console.warn("收到无效消息:", data);
+        return;
+      }
 
-    let messages = data.message.params.messages || data.message.params.message; // 兼容 node 和普通消息
-    if (!Array.isArray(messages)) {
-      console.warn("消息格式错误:", messages);
-      return;
-    }
+      let messages = data.message.params.messages || data.message.params.message; // 兼容 node 和普通消息
+      if (!Array.isArray(messages)) {
+        console.warn("消息格式错误:", messages);
+        return;
+      }
 
-    for (const msg of messages) {
-      await processMessage(msg);
+      for (const msg of messages) {
+        await processMessage(msg);
+      }
+    } catch (e) {
+      console.error("解析服务器消息失败:", e);
+      addServerMessage("[Invalid message format]");
     }
-  } catch (e) {
-    console.error("解析服务器消息失败:", e);
-    addServerMessage("[Invalid message format]");
   }
-}
 
 
 
@@ -393,6 +452,36 @@
         return null;
     }
 }
+    function addVideoMessage(videoPath) {
+      const chatContainer = document.getElementById("chatContainer");
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("message", "server-message");
+
+      const video = document.createElement("video");
+      video.src = videoPath;
+      video.controls = true;
+      video.style.maxWidth = "100%";
+      video.style.borderRadius = "8px";
+
+      messageDiv.appendChild(video);
+      chatContainer.appendChild(messageDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // 处理音频消息（嵌入音频）
+    function addAudioMessage(audioPath) {
+      const chatContainer = document.getElementById("chatContainer");
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("message", "server-message");
+
+      const audio = document.createElement("audio");
+      audio.src = audioPath;
+      audio.controls = true;
+
+      messageDiv.appendChild(audio);
+      chatContainer.appendChild(messageDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
 
     async function addImageMessage(imagePath) {
     if (imagePath.startsWith("file://")) {
