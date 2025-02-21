@@ -265,7 +265,7 @@ def file_to_base64():
     try:
         with open(file_path, "rb") as file:
             base64_str = base64.b64encode(file.read()).decode("utf-8")
-            # 根据文件扩展名生成适当的 MIME 类型
+
             file_extension = os.path.splitext(file_path)[1].lower()
             if file_extension in ['.jpg', '.jpeg']:
                 mime_type = 'image/jpeg'
@@ -273,10 +273,16 @@ def file_to_base64():
                 mime_type = 'image/png'
             elif file_extension == '.gif':
                 mime_type = 'image/gif'
-            elif file_extension in ['.mp3', '.wav']:
-                mime_type = 'audio/mpeg' if file_extension == '.mp3' else 'audio/wav'
-            elif file_extension in ['.mp4', '.webm']:
-                mime_type = 'video/mp4' if file_extension == '.mp4' else 'video/webm'
+            elif file_extension == '.mp3':
+                mime_type = 'audio/mpeg'
+            elif file_extension == '.wav':
+                mime_type = 'audio/wav'
+            elif file_extension == '.flac':
+                mime_type = 'audio/flac'
+            elif file_extension == '.mp4':
+                mime_type = 'video/mp4'
+            elif file_extension == '.webm':
+                mime_type = 'video/webm'
             else:
                 return jsonify({"error": "Unsupported file type"}), 400
 
@@ -350,7 +356,13 @@ async def handle_connection(websocket):
 
 # 启动 WebSocket 服务器
 async def start_server():
-    server = await websockets.serve(handle_connection, "0.0.0.0", 5008)
+    server = await websockets.serve(
+        handle_connection,
+        "0.0.0.0",
+        5008,
+        max_size=None  # 取消大小限制
+    )
+
     print("WebSocket 服务端已启动，在 5008 端口监听...")
     await server.wait_closed()
 def run_websocket_server():

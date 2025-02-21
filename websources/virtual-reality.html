@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Material Dashboard 3 - Chat</title>
+  <title>对话</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
   <link href="./assets/css/nucleo-icons.css" rel="stylesheet" />
   <link href="./assets/css/nucleo-svg.css" rel="stylesheet" />
@@ -256,11 +256,15 @@
           <div class="card my-4">
             <div class="card-body px-0 pb-2">
               <div class="chat-container" id="chatContainer"></div>
-              <div class="input-area">
+              <div class="input-area d-flex align-items-center">
                 <input type="text" id="messageInput" placeholder="Type your message..." class="form-control">
-                <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                <input type="file" id="fileInput" accept="image/*,video/*,audio/*,.pdf,.txt" style="display: none;" multiple>
+                <button onclick="document.getElementById('fileInput').click()" class="btn btn-light mx-2">
+                    Upload
+                </button>
                 <button onclick="sendMessage()" class="btn bg-gradient-primary">Send</button>
-              </div>
+            </div>
+
             </div>
           </div>
         </div>
@@ -287,11 +291,79 @@
       }
     }
 
-    function addUserMessage(message) {
+    function addUserMessage(msg) {
+      console.log("添加用户消息:", msg);
       const chatContainer = document.getElementById("chatContainer");
       const messageDiv = document.createElement("div");
       messageDiv.classList.add("message", "user-message");
-      messageDiv.textContent = message;
+
+
+      if (typeof msg === "string") {
+        if (msg==="") return;
+        messageDiv.textContent = msg;
+      } else if (msg.type === "text") {
+        if (msg.data.text==="") return;
+        messageDiv.textContent = msg.data.text;
+      } else if (msg.type === "image" && msg.data?.file) {
+        const img = document.createElement("img");
+        img.src = msg.data.url;
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", "user-message");
+        messageDiv.style.maxWidth = "40%"; // 让 div 自适应但不太宽
+
+        img.style.width = "100%"; // 让图片填充父容器
+        img.style.borderRadius = "8px"; // 让图片更美观
+
+        messageDiv.appendChild(img);
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      } else if (msg.type === "video" && msg.data?.file) {
+        const chatContainer = document.getElementById("chatContainer");
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", "user-message");
+
+        const video = document.createElement("video");
+        video.src = msg.data.url;
+        video.controls = true;
+        video.style.maxWidth = "100%";
+        video.style.borderRadius = "8px";
+
+        messageDiv.appendChild(video);
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      } else if (msg.type === "record" || msg.type === "audio" && msg.data?.file) {
+
+          const chatContainer = document.getElementById("chatContainer");
+          const messageDiv = document.createElement("div");
+          messageDiv.classList.add("message", "user-message");
+
+          const audio = document.createElement("audio");
+          audio.src = audioPath;
+          audio.controls = true;
+
+          messageDiv.appendChild(audio);
+          chatContainer.appendChild(messageDiv);
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+      } else if (msg.type === "file" && msg.data?.file) {
+        const filePath = msg.data.url;
+        const fileName = decodeURIComponent(filePath.split('/').pop());
+        const link = document.createElement("span");
+        link.textContent = fileName;
+        link.style.color = "blue";
+        link.style.textDecoration = "underline";
+        link.style.cursor = "pointer";
+        link.addEventListener("click", () => {
+          navigator.clipboard.writeText(filePath).then(() => {
+            alert("文件路径已复制，请手动粘贴到浏览器打开：\n\n" + filePath);
+          }).catch(err => {
+            console.error("无法复制路径：", err);
+            alert("请手动复制文件路径：\n\n" + filePath);
+          });
+        });
+        messageDiv.appendChild(link);
+      }
+
       chatContainer.appendChild(messageDiv);
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
@@ -320,9 +392,16 @@
         addServerMessage(msg.data.text);
         return;
       }
+      if (msg.type === "music"){
+        console.log("添加音乐消息:", msg.data.title);
+        let audio_url = msg.data.audio;
+        addAudioMessage(audio_url);
+        return;
+      }
 
   // 处理图片消息
       if (msg.type === "image" && msg.data?.file) {
+
         let imageUrl = msg.data.file;
         if (imageUrl.startsWith("file://")) {
           imageUrl = await convertFileToBase64(imageUrl);
@@ -505,7 +584,35 @@
     }
 
 
+    document.getElementById("fileInput").addEventListener("change", function (event) {
+      const files = event.target.files;
+      console.log("选择的文件:", files);
+      if (files.length > 0) {
+        for (const file of files) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const base64Data = e.target.result.split(",")[1]; // 获取 Base64 数据
+            const mimeType = file.type; // 直接获取文件 MIME 类型
+            const fileType = file.type.split("/")[0]; // 获取文件类别（image, video, audio, etc.）
 
+            let messageData;
+            if (fileType === "image") {
+              messageData = { type: fileType, data: { url: `data:${mimeType};base64,${base64Data}`, file: file.name } };
+            } else if (fileType === "video" || fileType === "audio") {
+              messageData = { type: fileType, data: { file: `data:${mimeType};base64,${base64Data}` } };
+            } else {
+              messageData = { type: fileType, data: { name: file.name, content: `data:${mimeType};base64,${base64Data}` } };
+            }
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify([messageData]));
+              addUserMessage(messageData);
+            }
+          };
+          reader.readAsDataURL(file); // 读取文件内容为 Base64
+        }
+      }
+    });
     document.addEventListener("DOMContentLoaded", connectWebSocket);
     document.getElementById('messageInput').addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
@@ -514,5 +621,13 @@
       }
     });
   </script>
+  <script src="./assets/js/core/popper.min.js"></script>
+  <script src="./assets/js/core/bootstrap.min.js"></script>
+  <script src="./assets/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="./assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <!-- <script src="./assets/js/plugins/chartjs.min.js"></script> -->
+  <script src="./assets/js/material-dashboard.js?v=3.2.0"></script>
+  <script src="./assets/js/application/yaml-editor.js"></script>
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
 </body>
 </html>
