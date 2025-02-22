@@ -917,14 +917,14 @@ function showAlert(type, message) {
   const alertContainer = document.getElementById('alert-container');
   // 创建 alert 元素
   const alertElement = document.createElement('div');
-  alertElement.classList.add('alert', type, 'alert-dismissible', 'fade', 'show','text-white','text-sm','fw-bold');
+  alertElement.classList.add('alert', type, 'alert-dismissible', 'fade', 'show', 'text-white', 'text-sm', 'fw-bold');
   alertElement.setAttribute('role', 'alert');
   const alertText = document.createElement('span');
   alertText.innerText = message;
   alertElement.appendChild(alertText);
   // 创建关闭按钮
   const closeButton = document.createElement('button');
-  closeButton.classList.add('btn-close','opacity-10');
+  closeButton.classList.add('btn-close', 'opacity-10');
   closeButton.setAttribute('type', 'button');
   closeButton.setAttribute('data-bs-dismiss', 'alert');
   closeButton.setAttribute('aria-label', 'Close');
@@ -939,4 +939,12 @@ function showAlert(type, message) {
       alertElement.remove();
     });
   }, 3000);
+}
+async function logout() {
+  const response = await fetch('./api/logout', {method: 'GET'});
+  const data = await response.json();
+  if (data.message === 'Success') {
+    showAlert('alert-success', '登出成功')
+    setTimeout(()=>{window.location.href = './login.html'},1000);
+  }
 }

@@ -156,11 +156,6 @@
               </a>
             </li>
             <li class="nav-item px-3 d-flex align-items-center">
-              <a href="javascript:;" class="nav-link text-body p-0">
-                <i class="material-symbols-rounded fixed-plugin-button-nav">settings</i>
-              </a>
-            </li>
-            <li class="nav-item pe-3 d-flex align-items-center">
               <a href="javascript:;" class="nav-link text-body font-weight-bold px-0" onclick="changeTheme()">
                 <i class="material-symbols-rounded">brightness_4</i>
               </a>
@@ -168,7 +163,7 @@
             <li class="nav-item dropdown pe-3 d-flex align-items-center">
               <a href="javascript:;" class="nav-link text-body p-0" id="dropdownMenuButton" data-bs-toggle="dropdown"
                 aria-expanded="false">
-                <i class="material-symbols-rounded">notifications</i>
+                <i class="material-symbols-rounded">account_circle</i>
               </a>
               <ul class="dropdown-menu  dropdown-menu-end  px-2 py-3 me-sm-n4" aria-labelledby="dropdownMenuButton">
                 <li class="mb-2">
@@ -246,8 +241,8 @@
               </ul>
             </li>
             <li class="nav-item d-flex align-items-center">
-              <a href="./pages/sign-in.html" class="nav-link text-body font-weight-bold px-0">
-                <i class="material-symbols-rounded">account_circle</i>
+              <a href="javascript:;" class="nav-link text-body font-weight-bold px-0" onclick="logout()">
+                <i class="material-symbols-rounded">exit_to_app</i>
               </a>
             </li>
           </ul>
@@ -277,6 +272,7 @@
       </div>
     </div>
   </div>
+  <div class="position-fixed top-1 end-1 z-index-2" id="alert-container"></div>
   <script>
     let ws;
     function connectWebSocket() {
