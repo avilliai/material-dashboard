@@ -29224,7 +29224,7 @@ pre[class*=language-] {
     var(--c), var(--r1), var(--r2),
     var(--c), var(--r1), var(--r2);
   background-repeat: no-repeat;
-  animation: l2 1s ease-in infinite alternate;
+  animation: l2 0.8s ease-in infinite alternate;
 }
 
 .dark-version .loading-icon {
@@ -29261,7 +29261,7 @@ pre[class*=language-] {
 }
 
 .fade-out {
-  animation: fadeOut 1s ease-in-out forwards;
+  animation: fadeOut 0.3s ease-in-out forwards;
 }
 
 @keyframes fadeOut {

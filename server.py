@@ -5,6 +5,7 @@ import json
 import threading
 import time
 from collections import OrderedDict
+from dbm import error
 from email.quoprimime import decode
 from tkinter import Frame
 
@@ -39,13 +40,10 @@ user_info = {
 #用户信息文件
 user_file = "./user_info.yaml"
 
-#会话token
-auth_token = Fernet.generate_key().decode()
+#会话信息字典（token跟expires）
+auth_info={}
 
-#会话有效期限
-auth_expires = 0
-
-#会话有效时长，秒数为单位
+#会话有效时长，秒数为单位（暂时只对webui生效）
 auth_duration = 3600
 #可用的git源
 REPO_SOURCES = [
@@ -69,15 +67,14 @@ YAML_FILES = {
 def auth(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        global auth_token
-        global auth_expires
-        read_token = request.cookies.get('auth_token')
-        read_expires = request.cookies.get('auth_expires')
-        print(f"read_token={read_token}  read_expires={read_expires}  token={auth_token}  expires={auth_expires}")
+        global auth_info
+        recv_token = request.cookies.get('auth_token')
+        # recv_expires = request.cookies.get('auth_expires')
+        print(f"客户端token：{recv_token}")
         try:
-            if read_token != auth_token and int(read_expires) >= int(time.time()):
+            if auth_info[recv_token] < int(time.time()):  #如果存在token且过期
                 return jsonify({"error": "Unauthorized"}), 400
-        except:
+        except:     #不存在token
             return jsonify({"error": "Unauthorized"}), 400
         return func(*args, **kwargs)
     return wrapper
@@ -279,36 +276,53 @@ def clone_source():
     os.system(f"{git_path} clone --depth 1 {source_url}")
 
     return jsonify({"message": f"开始部署 {source_url}"})
-
 # 登录api
 @app.route("/api/login", methods=['POST'])
 def login():
-    global auth_token
-    global auth_expires
+    global auth_info
     global auth_duration
     data = request.get_json()
     print(data)
     if data == user_info:
-        auth_token = Fernet.generate_key().decode()
-        auth_expires = int(time.time()+auth_duration)
-        resp = make_response(jsonify({"message": "Success"}))
+        print("登录成功")
+        auth_token = Fernet.generate_key().decode()      #生成token
+        auth_expires = int(time.time()+auth_duration)    #生成过期时间
+        auth_info[auth_token] = auth_expires             #加入字典
+        print(auth_info)
+        resp = make_response(jsonify({"message":"Success","auth_token": auth_token}))
         resp.set_cookie("auth_token", auth_token)
         resp.set_cookie("auth_expires",str(auth_expires))
         return resp
     else:
+        print("登录失败")
         return jsonify({"error": "Failed"}), 401
 
 # 登出api
 @app.route("/api/logout", methods=['GET','POST'])
 def logout():
-    global auth_token
-    global auth_expires
-    print("用户登出")
-    resp = make_response(jsonify({"message": "Success"}))
-    auth_token = Fernet.generate_key().decode()
-    auth_expires = 0
-    return resp
+    global auth_info
+    recv_token = request.cookies.get('auth_token')
+    try:
+        del auth_info[recv_token]
+        print("用户登出")
+        return jsonify({"message": "Success"})
+    except:
+        print("token不存在")
+        return jsonify({"error": "Invalid token"})
 
+# 账户修改
+@app.route("/api/profile", methods=['GET','POST'])
+@auth
+def profile():
+    global user_info
+    if request.method == 'GET':
+        return jsonify({"account": user_info['account']})
+    elif request.method == 'POST':
+        data = request.get_json()
+        if data["account"] and data["password"]:
+            user_info = data
+            with open(user_file, 'w', encoding="utf-8") as file:
+                yaml.dump(user_info, file)
 
 @app.route("/")  # 定义根路由
 def index():
@@ -366,12 +380,23 @@ def file_to_base64():
 clients = set()
 
 async def handle_connection(websocket):
+    global auth_info
     print("WebSocket 客户端已连接")
     clients.add(websocket)
 
     try:
         # 发送连接成功消息
         #await websocket.send(json.dumps({'time': 1739849686, 'self_id': 3377428814, 'post_type': 'meta_event', 'meta_event_type': 'lifecycle', 'sub_type': 'connect'}))
+        while True:
+            # 鉴权，超时抛出异常，终止websocket连接
+            recv_token = await asyncio.wait_for(websocket.recv(),10)
+            recv_token = json.loads(recv_token)['auth_token']
+            try:
+                if auth_info[recv_token] > int(time.time()):
+                    print("WebSocket 客户端鉴权成功")
+                    break
+            except:
+                raise ValueError
 
         while True:
             # 接收来自前端的消息
@@ -424,6 +449,8 @@ async def handle_connection(websocket):
             print(f"已发送 OneBot v11 事件: {event_json}")
     except websockets.exceptions.ConnectionClosed as e:
         print(f"客户端连接关闭: {e}")
+    except ValueError:
+        print("WebSocket 客户端鉴权失败")
     finally:
         print("WebSocket 客户端断开连接")
         clients.remove(websocket)

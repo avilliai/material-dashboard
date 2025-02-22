@@ -58,6 +58,10 @@
 </head>
 
 <body class="g-sidenav-show bg-gray-100 d-flex">
+  <script src="./assets/js/common.js"></script>
+  <div id="loading-screen">
+    <div class="loading-icon"></div>
+  </div>
   <!-- 侧边栏 -->
   <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 my-2"
     id="sidenav-main">
@@ -259,12 +263,13 @@
               <div class="chat-container" id="chatContainer"></div>
               <div class="input-area d-flex align-items-center">
                 <input type="text" id="messageInput" placeholder="Type your message..." class="form-control">
-                <input type="file" id="fileInput" accept="image/*,video/*,audio/*,.pdf,.txt" style="display: none;" multiple>
+                <input type="file" id="fileInput" accept="image/*,video/*,audio/*,.pdf,.txt" style="display: none;"
+                  multiple>
                 <button onclick="document.getElementById('fileInput').click()" class="btn btn-light mx-2">
-                    Upload
+                  Upload
                 </button>
                 <button onclick="sendMessage()" class="btn bg-gradient-primary">Send</button>
-            </div>
+              </div>
 
             </div>
           </div>
@@ -275,8 +280,11 @@
   <script>
     let ws;
     function connectWebSocket() {
-      ws = new WebSocket("ws://127.0.0.1:5008");
-      ws.onopen = () => addServerMessage("WebSocket Connected!");
+      let auth_token = localStorage.getItem('auth_token');
+      ws = new WebSocket(`ws://${window.location.hostname}:5008`);
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ "auth_token": auth_token }));
+        addServerMessage("WebSocket Connected!");}
       ws.onmessage = (event) => handleServerMessage(event.data);
       ws.onclose = () => setTimeout(connectWebSocket, 5000);
       ws.onerror = (error) => addServerMessage(`WebSocket Error: ${error.message || 'Unknown error'}`);
@@ -300,10 +308,10 @@
 
 
       if (typeof msg === "string") {
-        if (msg==="") return;
+        if (msg === "") return;
         messageDiv.textContent = msg;
       } else if (msg.type === "text") {
-        if (msg.data.text==="") return;
+        if (msg.data.text === "") return;
         messageDiv.textContent = msg.data.text;
       } else if (msg.type === "image" && msg.data?.file) {
         const img = document.createElement("img");
@@ -316,7 +324,7 @@
         img.style.borderRadius = "8px"; // 让图片更美观
 
         img.style.cursor = "pointer";//鼠标放上去变点击
-        new Viewer(img,{url: 'src'});
+        new Viewer(img, { url: 'src' });
         messageDiv.appendChild(img);
         chatContainer.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -337,17 +345,17 @@
         chatContainer.scrollTop = chatContainer.scrollHeight;
       } else if (msg.type === "record" || msg.type === "audio" && msg.data?.file) {
 
-          const chatContainer = document.getElementById("chatContainer");
-          const messageDiv = document.createElement("div");
-          messageDiv.classList.add("message", "user-message");
+        const chatContainer = document.getElementById("chatContainer");
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", "user-message");
 
-          const audio = document.createElement("audio");
-          audio.src = audioPath;
-          audio.controls = true;
+        const audio = document.createElement("audio");
+        audio.src = audioPath;
+        audio.controls = true;
 
-          messageDiv.appendChild(audio);
-          chatContainer.appendChild(messageDiv);
-          chatContainer.scrollTop = chatContainer.scrollHeight;
+        messageDiv.appendChild(audio);
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
       } else if (msg.type === "file" && msg.data?.file) {
         const filePath = msg.data.url;
         const fileName = decodeURIComponent(filePath.split('/').pop());
@@ -395,14 +403,14 @@
         addServerMessage(msg.data.text);
         return;
       }
-      if (msg.type === "music"){
+      if (msg.type === "music") {
         console.log("添加音乐消息:", msg.data.title);
         let audio_url = msg.data.audio;
         addAudioMessage(audio_url);
         return;
       }
 
-  // 处理图片消息
+      // 处理图片消息
       if (msg.type === "image" && msg.data?.file) {
 
         let imageUrl = msg.data.file;
@@ -440,7 +448,7 @@
 
         // 处理 Windows 和 Linux 的 file:// 格式
         if (filePath.startsWith("file://")) {
-            filePath = filePath.replace("file:///", "").replace("file://", "");
+          filePath = filePath.replace("file:///", "").replace("file://", "");
         }
 
         const fileName = decodeURIComponent(filePath.split('/').pop()); // 解析文件名
@@ -453,12 +461,12 @@
 
         // 点击时，弹出提示框，并复制到剪贴板
         link.addEventListener("click", () => {
-            navigator.clipboard.writeText(filePath).then(() => {
-                alert("文件路径已复制，请手动粘贴到浏览器打开：\n\n" + filePath);
-            }).catch(err => {
-                console.error("无法复制路径：", err);
-                alert("请手动复制文件路径：\n\n" + filePath);
-            });
+          navigator.clipboard.writeText(filePath).then(() => {
+            alert("文件路径已复制，请手动粘贴到浏览器打开：\n\n" + filePath);
+          }).catch(err => {
+            console.error("无法复制路径：", err);
+            alert("请手动复制文件路径：\n\n" + filePath);
+          });
         });
 
         const chatContainer = document.getElementById("chatContainer");
@@ -469,33 +477,33 @@
         chatContainer.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
 
+      }
+      console.warn("未知消息类型:", msg);
     }
-    console.warn("未知消息类型:", msg);
-  }
 
-   async function handleServerMessage(rawData) {
-    try {
-      const data = JSON.parse(rawData);
+    async function handleServerMessage(rawData) {
+      try {
+        const data = JSON.parse(rawData);
 
-      if (!data.message || !data.message.params) {
-        console.warn("收到无效消息:", data);
-        return;
+        if (!data.message || !data.message.params) {
+          console.warn("收到无效消息:", data);
+          return;
+        }
+
+        let messages = data.message.params.messages || data.message.params.message; // 兼容 node 和普通消息
+        if (!Array.isArray(messages)) {
+          console.warn("消息格式错误:", messages);
+          return;
+        }
+
+        for (const msg of messages) {
+          await processMessage(msg);
+        }
+      } catch (e) {
+        console.error("解析服务器消息失败:", e);
+        addServerMessage("[Invalid message format]");
       }
-
-      let messages = data.message.params.messages || data.message.params.message; // 兼容 node 和普通消息
-      if (!Array.isArray(messages)) {
-        console.warn("消息格式错误:", messages);
-        return;
-      }
-
-      for (const msg of messages) {
-        await processMessage(msg);
-      }
-    } catch (e) {
-      console.error("解析服务器消息失败:", e);
-      addServerMessage("[Invalid message format]");
     }
-  }
 
 
 
@@ -503,37 +511,37 @@
 
 
     function addServerMessage(message) {
-    if (!message.trim()) return;  // 如果 message 为空或仅包含空格，则不显示
+      if (!message.trim()) return;  // 如果 message 为空或仅包含空格，则不显示
 
-    const chatContainer = document.getElementById("chatContainer");
-    const messageDiv = document.createElement("div");
-    messageDiv.classList.add("message", "server-message");
-    messageDiv.textContent = message;
-    chatContainer.appendChild(messageDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+      const chatContainer = document.getElementById("chatContainer");
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("message", "server-message");
+      messageDiv.textContent = message;
+      chatContainer.appendChild(messageDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
 
     async function convertFileToBase64(filePath) {
-    try {
+      try {
         const response = await fetch("http://127.0.0.1:5007/api/file2base64", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ path: filePath })
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path: filePath })
         });
 
         const data = await response.json();
         if (data.base64) {
-            return data.base64;  // 返回 base64 数据
+          return data.base64;  // 返回 base64 数据
         } else {
-            console.error("Error:", data.error);
-            return null;
+          console.error("Error:", data.error);
+          return null;
         }
-    } catch (error) {
+      } catch (error) {
         console.error("Request failed:", error);
         return null;
+      }
     }
-}
     function addVideoMessage(videoPath) {
       const chatContainer = document.getElementById("chatContainer");
       const messageDiv = document.createElement("div");
@@ -566,25 +574,25 @@
     }
 
     async function addImageMessage(imagePath) {
-    if (imagePath.startsWith("file://")) {
+      if (imagePath.startsWith("file://")) {
         imagePath = await convertFileToBase64(imagePath);
         if (!imagePath) return;  // 如果转换失败，直接返回
-    }
+      }
 
-    const chatContainer = document.getElementById("chatContainer");
-    const messageDiv = document.createElement("div");
-    messageDiv.classList.add("message", "server-message");
-    messageDiv.style.maxWidth = "20%"; // 让 div 自适应但不太宽
+      const chatContainer = document.getElementById("chatContainer");
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("message", "server-message");
+      messageDiv.style.maxWidth = "20%"; // 让 div 自适应但不太宽
 
-    const img = document.createElement("img");
-    img.src = imagePath;
-    img.style.width = "100%"; // 让图片填充父容器
-    img.style.borderRadius = "8px"; // 让图片更美观
-    img.style.cursor = "pointer";//鼠标放上去变点击
-    new Viewer(img,{url: 'src'});
-    messageDiv.appendChild(img);
-    chatContainer.appendChild(messageDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+      const img = document.createElement("img");
+      img.src = imagePath;
+      img.style.width = "100%"; // 让图片填充父容器
+      img.style.borderRadius = "8px"; // 让图片更美观
+      img.style.cursor = "pointer";//鼠标放上去变点击
+      new Viewer(img, { url: 'src' });
+      messageDiv.appendChild(img);
+      chatContainer.appendChild(messageDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
 
@@ -633,4 +641,5 @@
   <script src="./assets/js/plugins/viewer.min.js"></script>
   <script async defer src="https://buttons.github.io/buttons.js"></script>
 </body>
+
 </html>

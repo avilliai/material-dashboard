@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // 检查服务端响应
       if (data.message === 'Success') {
+        localStorage.setItem('auth_token', getCookie('auth_token'));
         // 登录成功，跳转到主页
         showAlert('alert-success','登录成功')
         window.location.href = './';
