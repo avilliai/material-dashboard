@@ -419,6 +419,14 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
+
+  const profileButton = document.getElementById('profile-button');
+  const themeButton = document.getElementById('theme-button');
+  const logoutButton = document.getElementById('logout-button');
+
+  profileButton.addEventListener('click', showProfileDialog);
+  themeButton.addEventListener('click', changeTheme);
+  logoutButton.addEventListener('click', logout);
 });
 
 // Tabs navigation
@@ -940,11 +948,83 @@ function showAlert(type, message) {
     });
   }, 3000);
 }
+let isAppendDialog = false;
+function showProfileDialog() {
+  const dialogElement = `
+  <div class="modal fade" id="profile-dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4>修改登录信息</h4>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0" style="opacity: 0.9;">新账户（留空保持不变）</p>
+          <div class="input-group input-group-outline my-3">
+            <input type="text" class="form-control" id="new-account" placeholder="请输入新账户">
+          </div>
+          <p class="mb-0" style="opacity: 0.9;">新密码（留空保持不变）</p>
+          <div class="input-group input-group-outline mb-5">
+            <input type="password" class="form-control" id="new-password" placeholder="请输入新密码">
+          </div>
+          <div class="text-center">
+            <button type="button" id="change-profile" class="btn bg-gradient-dark w-100 my-4 mb-2">修改</button>
+          </div>
+          <p class="mt-4 text-sm text-center">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>`
+  if (!isAppendDialog) {
+    isAppendDialog = true;
+    document.body.insertAdjacentHTML('beforeend', dialogElement);
+  }
+  const dialogEl = document.getElementById('profile-dialog');
+  const changeProfileButton = document.getElementById('change-profile');
+  const dialog = new bootstrap.Modal(dialogEl);
+  changeProfileButton.addEventListener('click', changeProfile);
+  dialog.show();
+}
+
 async function logout() {
-  const response = await fetch('./api/logout', {method: 'GET'});
-  const data = await response.json();
-  if (data.message === 'Success') {
-    showAlert('alert-success', '登出成功')
-    setTimeout(()=>{window.location.href = './login.html'},1000);
+  try {
+    const response = await fetch('./api/logout', { method: 'GET' });
+    const data = await response.json();
+    if (data.message === 'Success') showAlert('alert-success', '登出成功')
+    else showAlert('alert-danger', data.error);
+    setTimeout(() => { window.location.href = './login.html' }, 2000);
+  } catch (error) {
+    showAlert('alert-danger', '网络连接出错')
+  }
+}
+
+async function changeProfile() {
+  const accountInput = document.getElementById('new-account');
+  const passwordInput = document.getElementById('new-password');
+
+  const newAccount = accountInput.value;
+  let newPassword = passwordInput.value;
+  if (newPassword) newPassword = sha3_256(newPassword);
+  try {
+    const response = await fetch('./api/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        account: newAccount,
+        password: newPassword
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.message === 'Success') showAlert('alert-success', '修改成功，请重新登录');
+    else showAlert('alert-danger', data.error);
+    setTimeout(() => { window.location.href = './login.html' }, 2000);
+  } catch (error) {
+    showAlert('alert-danger', '网络连接出错')
   }
 }

@@ -6650,7 +6650,7 @@ fieldset:disabled .btn {
 }
 
 .modal {
-  --bs-modal-zindex: 1050;
+  --bs-modal-zindex: 1100;
   --bs-modal-width: 500px;
   --bs-modal-padding: 1rem;
   --bs-modal-margin: 0.5rem;
@@ -6681,6 +6681,14 @@ fieldset:disabled .btn {
   overflow-x: hidden;
   overflow-y: auto;
   outline: 0;
+}
+
+.dark-version .modal {
+  --bs-modal-bg: #191919;
+  --bs-modal-border-color: #76767630;
+  --bs-modal-box-shadow: 0 0.3125rem 0.625rem 0 rgba(200, 200, 200, 0.12);
+  --bs-modal-header-border-color: #404040;
+  --bs-modal-footer-border-color: #404040;
 }
 
 .modal-dialog {
@@ -6743,7 +6751,7 @@ fieldset:disabled .btn {
 }
 
 .modal-backdrop {
-  --bs-backdrop-zindex: 1040;
+  --bs-backdrop-zindex: 1099;
   --bs-backdrop-bg: #0a0a0a;
   --bs-backdrop-opacity: 0.5;
   position: fixed;
@@ -29285,5 +29293,9 @@ pre[class*=language-] {
 }
 .dark-version :-webkit-autofill{
   -webkit-text-fill-color: #ffffffcc !important;
+}
+
+#alert-container {
+  z-index: 2000 !important;
 }
 /*# sourceMappingURL=dashboard-free.css.map */

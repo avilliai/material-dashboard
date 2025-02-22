@@ -44,7 +44,7 @@ user_file = "./user_info.yaml"
 auth_info={}
 
 #会话有效时长，秒数为单位（暂时只对webui生效）
-auth_duration = 3600
+auth_duration = 7200
 #可用的git源
 REPO_SOURCES = [
    "https://ghfast.top/https://github.com/avilliai/Eridanus.git",
@@ -70,7 +70,7 @@ def auth(func):
         global auth_info
         recv_token = request.cookies.get('auth_token')
         # recv_expires = request.cookies.get('auth_expires')
-        print(f"客户端token：{recv_token}")
+        # print(f"客户端返回token：{recv_token}")
         try:
             if auth_info[recv_token] < int(time.time()):  #如果存在token且过期
                 return jsonify({"error": "Unauthorized"}), 400
@@ -315,21 +315,27 @@ def logout():
 @auth
 def profile():
     global user_info
+    global auth_info
     if request.method == 'GET':
         return jsonify({"account": user_info['account']})
     elif request.method == 'POST':
         data = request.get_json()
-        if data["account"] and data["password"]:
-            user_info = data
+        print(data)
+        if data["account"]:
+            user_info["account"] = data["account"]
+        if data["password"]:
+            user_info["password"] = data["password"]
             with open(user_file, 'w', encoding="utf-8") as file:
                 yaml.dump(user_info, file)
+        auth_info={}    #清空登录信息
+        return jsonify({"message": "Success"})
 
 @app.route("/")  # 定义根路由
 def index():
     if not has_eridanus():
-        return render_template("setup.html")  # 返回 setup.html
+        return redirect("./setup.html")  # 返回 setup.html
     else:
-        return render_template("dashboard.html") # 返回 dashboard.html
+        return redirect("./setup.html") # 返回 dashboard.html
 
 
 import base64
@@ -481,7 +487,7 @@ if __name__ == "__main__":
             yaml_file = yaml.load(file)
             user_info['account'] = yaml_file['account']
             user_info['password'] = yaml_file['password']
-        print(f"用户登录信息读取成功。账户名：{user_info['account']}")
+        print(f"用户登录信息读取成功。用户名：{user_info['account']}")
     except:
         print("用户登录信息读取失败，已恢复默认。默认用户名/密码：eridanus")
         with open(user_file, 'w', encoding="utf-8") as file:
