@@ -26,22 +26,22 @@
   };
 })();
 
-let darkModeFlag = false;
 
-//检测浏览器深色模式
-function checkDarkMode() {
-  //检查本地有没有存在该值
-  let darkModeStorage = localStorage.getItem('darkMode');
-  //如果没有就存入
-  if (darkModeStorage === null) {
-    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    darkModeMediaQuery.matches ? darkModeFlag = true : darkModeFlag = false;
-    localStorage.setItem('darkMode', darkModeFlag);
-  }
-  else {
-    darkMode(darkModeStorage === 'true');
-  }
-}
+
+// //检测浏览器深色模式
+// function checkDarkMode() {
+//   //检查本地有没有存在该值
+//   let darkModeStorage = localStorage.getItem('darkMode');
+//   //如果没有就存入
+//   if (darkModeStorage === null) {
+//     const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+//     darkModeMediaQuery.matches ? darkModeFlag = true : darkModeFlag = false;
+//     localStorage.setItem('darkMode', darkModeFlag);
+//   }
+//   else {
+//     darkMode(darkModeStorage === 'true');
+//   }
+// }
 
 //主题切换
 function changeTheme() {
@@ -52,9 +52,9 @@ function changeTheme() {
   darkMode(darkModeFlag);
 }
 
-//初始检测
-checkDarkMode();
-
+// //初始检测
+// checkDarkMode();
+darkMode(localStorage.getItem('darkMode') === 'true');
 
 // Verify navbar blur on scroll
 if (document.getElementById('navbarBlur')) {
@@ -419,6 +419,14 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
+
+  const profileButton = document.getElementById('profile-button');
+  const themeButton = document.getElementById('theme-button');
+  const logoutButton = document.getElementById('logout-button');
+
+  profileButton.addEventListener('click', showProfileDialog);
+  themeButton.addEventListener('click', changeTheme);
+  logoutButton.addEventListener('click', logout);
 });
 
 // Tabs navigation
@@ -917,26 +925,106 @@ function showAlert(type, message) {
   const alertContainer = document.getElementById('alert-container');
   // 创建 alert 元素
   const alertElement = document.createElement('div');
-  alertElement.classList.add('alert', type, 'alert-dismissible', 'fade', 'show','text-white','text-sm');
+  alertElement.classList.add('alert', type, 'alert-dismissible', 'fade', 'show', 'text-white', 'text-sm', 'fw-bold');
   alertElement.setAttribute('role', 'alert');
   const alertText = document.createElement('span');
   alertText.innerText = message;
   alertElement.appendChild(alertText);
   // 创建关闭按钮
   const closeButton = document.createElement('button');
-  closeButton.classList.add('btn-close','opacity-10');
+  closeButton.classList.add('btn-close', 'opacity-10');
   closeButton.setAttribute('type', 'button');
   closeButton.setAttribute('data-bs-dismiss', 'alert');
   closeButton.setAttribute('aria-label', 'Close');
-  closeButton.innerHTML = "<span>x</span>";
+  closeButton.innerHTML = "<span>X</span>";
   alertElement.appendChild(closeButton);
   // 将 alert 元素添加到容器中
   alertContainer.appendChild(alertElement);
-  // 2秒后渐隐,并删除 alert 元素
+  // 3秒后渐隐,并删除 alert 元素
   setTimeout(() => {
     alertElement.classList.remove('show');
     alertElement.addEventListener('transitionend', function () {
       alertElement.remove();
     });
-  }, 2000);
+  }, 3000);
+}
+let isAppendDialog = false;
+function showProfileDialog() {
+  const dialogElement = `
+  <div class="modal fade" id="profile-dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4>修改登录信息</h4>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0" style="opacity: 0.9;">新账户（留空保持不变）</p>
+          <div class="input-group input-group-outline my-3">
+            <input type="text" class="form-control" id="new-account" placeholder="请输入新账户">
+          </div>
+          <p class="mb-0" style="opacity: 0.9;">新密码（留空保持不变）</p>
+          <div class="input-group input-group-outline mb-5">
+            <input type="password" class="form-control" id="new-password" placeholder="请输入新密码">
+          </div>
+          <div class="text-center">
+            <button type="button" id="change-profile" class="btn bg-gradient-dark w-100 my-4 mb-2">修改</button>
+          </div>
+          <p class="mt-4 text-sm text-center">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>`
+  if (!isAppendDialog) {
+    isAppendDialog = true;
+    document.body.insertAdjacentHTML('beforeend', dialogElement);
+  }
+  const dialogEl = document.getElementById('profile-dialog');
+  const changeProfileButton = document.getElementById('change-profile');
+  const dialog = new bootstrap.Modal(dialogEl);
+  changeProfileButton.addEventListener('click', changeProfile);
+  dialog.show();
+}
+
+async function logout() {
+  try {
+    const response = await fetch('./api/logout', { method: 'GET' });
+    const data = await response.json();
+    if (data.message === 'Success') showAlert('alert-success', '登出成功')
+    else showAlert('alert-danger', data.error);
+    setTimeout(() => { window.location.href = './login.html' }, 2000);
+  } catch (error) {
+    showAlert('alert-danger', '网络连接出错')
+  }
+}
+
+async function changeProfile() {
+  const accountInput = document.getElementById('new-account');
+  const passwordInput = document.getElementById('new-password');
+
+  const newAccount = accountInput.value;
+  let newPassword = passwordInput.value;
+  if (newPassword) newPassword = sha3_256(newPassword);
+  try {
+    const response = await fetch('./api/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        account: newAccount,
+        password: newPassword
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.message === 'Success') showAlert('alert-success', '修改成功，请重新登录');
+    else showAlert('alert-danger', data.error);
+    setTimeout(() => { window.location.href = './login.html' }, 2000);
+  } catch (error) {
+    showAlert('alert-danger', '网络连接出错')
+  }
 }

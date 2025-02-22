@@ -6650,7 +6650,7 @@ fieldset:disabled .btn {
 }
 
 .modal {
-  --bs-modal-zindex: 1050;
+  --bs-modal-zindex: 1100;
   --bs-modal-width: 500px;
   --bs-modal-padding: 1rem;
   --bs-modal-margin: 0.5rem;
@@ -6681,6 +6681,14 @@ fieldset:disabled .btn {
   overflow-x: hidden;
   overflow-y: auto;
   outline: 0;
+}
+
+.dark-version .modal {
+  --bs-modal-bg: #191919;
+  --bs-modal-border-color: #76767630;
+  --bs-modal-box-shadow: 0 0.3125rem 0.625rem 0 rgba(200, 200, 200, 0.12);
+  --bs-modal-header-border-color: #404040;
+  --bs-modal-footer-border-color: #404040;
 }
 
 .modal-dialog {
@@ -6743,7 +6751,7 @@ fieldset:disabled .btn {
 }
 
 .modal-backdrop {
-  --bs-backdrop-zindex: 1040;
+  --bs-backdrop-zindex: 1099;
   --bs-backdrop-bg: #0a0a0a;
   --bs-backdrop-opacity: 0.5;
   position: fixed;
@@ -23088,16 +23096,6 @@ body.dark-version {
     cursor: pointer;
   }
 
-  .dropdown .dropdown-toggle:after,
-  .dropup .dropdown-toggle:after,
-  .dropstart .dropdown-toggle:after,
-  .dropend .dropdown-toggle:after {
-    content: "\f107";
-    font: normal normal normal 14px/1 FontAwesome;
-    border: none;
-    vertical-align: middle;
-    font-weight: 600;
-  }
 
   .dropdown .dropdown-toggle.show:after,
   .dropup .dropdown-toggle.show:after,
@@ -25748,7 +25746,7 @@ hr.horizontal.gray-light {
 }
 
 .sidenav {
-  z-index: 9999;
+  z-index: 999;
 }
 
 .sidenav .navbar-brand,
@@ -29234,7 +29232,7 @@ pre[class*=language-] {
     var(--c), var(--r1), var(--r2),
     var(--c), var(--r1), var(--r2);
   background-repeat: no-repeat;
-  animation: l2 1s ease-in infinite alternate;
+  animation: l2 0.8s ease-in infinite alternate;
 }
 
 .dark-version .loading-icon {
@@ -29271,7 +29269,7 @@ pre[class*=language-] {
 }
 
 .fade-out {
-  animation: fadeOut 1s ease-in-out forwards;
+  animation: fadeOut 0.3s ease-in-out forwards;
 }
 
 @keyframes fadeOut {
@@ -29284,10 +29282,20 @@ pre[class*=language-] {
   }
 }
 
-
 .dark-version .github-star .social-count {
   background-color: #000;
   color: #fff
 }
 
+:-webkit-autofill {
+  -webkit-text-fill-color: #000000cc !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+.dark-version :-webkit-autofill{
+  -webkit-text-fill-color: #ffffffcc !important;
+}
+
+#alert-container {
+  z-index: 2000 !important;
+}
 /*# sourceMappingURL=dashboard-free.css.map */

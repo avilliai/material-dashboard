@@ -1,18 +1,23 @@
 # encoding: utf-8
 import asyncio
+import functools
 import json
 import threading
 import time
 from collections import OrderedDict
+from dbm import error
+from email.quoprimime import decode
+from tkinter import Frame
 
 import websockets
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, make_response, redirect, url_for
 from flask_cors import CORS
-
+from cryptography.fernet import Fernet
 from ruamel.yaml import YAML, comments
 from threading import Thread
 import subprocess
 import os
+import time
 
 
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString, SingleQuotedScalarString
@@ -25,6 +30,21 @@ if os.path.exists(custom_git_path):
 else:
     git_path = "git"
 print(f"Git path: {git_path}")
+
+#默认用户信息
+user_info = {
+    "account":"eridanus",
+    "password":"f6074ac37e2f8825367d9ae118a523abf16924a86414242ae921466db1e84583",
+}
+
+#用户信息文件
+user_file = "./user_info.yaml"
+
+#会话信息字典（token跟expires）
+auth_info={}
+
+#会话有效时长，秒数为单位（暂时只对webui生效）
+auth_duration = 7200
 #可用的git源
 REPO_SOURCES = [
    "https://ghfast.top/https://github.com/avilliai/Eridanus.git",
@@ -35,13 +55,29 @@ REPO_SOURCES = [
    "https://gitclone.com/github.com/avilliai/Eridanus.git"
 ]
 
-# 文件路径配置
+# 配置文件路径
 YAML_FILES = {
     "basic_config.yaml": "Eridanus/config/basic_config.yaml",
     "api.yaml": "Eridanus/config/api.yaml",
     "settings.yaml": "Eridanus/config/settings.yaml",
     "controller.yaml": "Eridanus/config/controller.yaml"
 }
+
+#鉴权
+def auth(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        global auth_info
+        recv_token = request.cookies.get('auth_token')
+        # recv_expires = request.cookies.get('auth_expires')
+        # print(f"客户端返回token：{recv_token}")
+        try:
+            if auth_info[recv_token] < int(time.time()):  #如果存在token且过期
+                return jsonify({"error": "Unauthorized"}), 400
+        except:     #不存在token
+            return jsonify({"error": "Unauthorized"}), 400
+        return func(*args, **kwargs)
+    return wrapper
 
 # 初始化 YAML 解析器（支持注释）
 yaml = YAML()
@@ -76,7 +112,6 @@ def merge_dicts(old, new):
         # 如果键不在新的yaml中，直接添加
         else:
             print(f"移除键 key: {k}, value: {v}")
-
 
 def conflict_file_dealer(old_data: dict, file_new='new_aiReply.yaml'):
     print(f"冲突文件处理: {file_new}")
@@ -171,6 +206,7 @@ def has_eridanus():
         return False
 
 @app.route("/api/load/<filename>", methods=["GET"])
+@auth
 def load_file(filename):
     """加载指定的 YAML 文件"""
     if filename not in YAML_FILES:
@@ -186,6 +222,7 @@ def load_file(filename):
     return rtd
 
 @app.route("/api/save/<filename>", methods=["POST"])
+@auth
 def save_file(filename):
     """接收前端数据并保存到 YAML 文件"""
     if filename not in YAML_FILES:
@@ -207,21 +244,25 @@ def save_file(filename):
         return jsonify(result), 500
 
 @app.route("/api/sources", methods=["GET"])
+@auth
 def list_sources():
     """列出所有可用的git源"""
     return jsonify(list(REPO_SOURCES))
 
 @app.route("/api/files", methods=["GET"])
+@auth
 def list_files():
     """列出所有可用的 YAML 文件"""
     return jsonify({"files": list(YAML_FILES.keys())})
 
 @app.route("/api/pull", methods=["POST"])
+@auth
 def pull_eridanus():
     """从仓库拉取eridanus(未完成)"""
-
     return jsonify({"message": "success"})
+
 @app.route("/api/clone", methods=["POST"])
+@auth
 def clone_source():
     data = request.get_json()
     source_url = data.get("source")
@@ -235,19 +276,72 @@ def clone_source():
     os.system(f"{git_path} clone --depth 1 {source_url}")
 
     return jsonify({"message": f"开始部署 {source_url}"})
+# 登录api
+@app.route("/api/login", methods=['POST'])
+def login():
+    global auth_info
+    global auth_duration
+    data = request.get_json()
+    print(data)
+    if data == user_info:
+        print("登录成功")
+        auth_token = Fernet.generate_key().decode()      #生成token
+        auth_expires = int(time.time()+auth_duration)    #生成过期时间
+        auth_info[auth_token] = auth_expires             #加入字典
+        print(auth_info)
+        resp = make_response(jsonify({"message":"Success","auth_token": auth_token}))
+        resp.set_cookie("auth_token", auth_token)
+        resp.set_cookie("auth_expires",str(auth_expires))
+        return resp
+    else:
+        print("登录失败")
+        return jsonify({"error": "Failed"}), 401
+
+# 登出api
+@app.route("/api/logout", methods=['GET','POST'])
+def logout():
+    global auth_info
+    recv_token = request.cookies.get('auth_token')
+    try:
+        del auth_info[recv_token]
+        print("用户登出")
+        return jsonify({"message": "Success"})
+    except:
+        print("token不存在")
+        return jsonify({"error": "Invalid token"})
+
+# 账户修改
+@app.route("/api/profile", methods=['GET','POST'])
+@auth
+def profile():
+    global user_info
+    global auth_info
+    if request.method == 'GET':
+        return jsonify({"account": user_info['account']})
+    elif request.method == 'POST':
+        data = request.get_json()
+        print(data)
+        if data["account"]:
+            user_info["account"] = data["account"]
+        if data["password"]:
+            user_info["password"] = data["password"]
+            with open(user_file, 'w', encoding="utf-8") as file:
+                yaml.dump(user_info, file)
+        auth_info={}    #清空登录信息
+        return jsonify({"message": "Success"})
+
 @app.route("/")  # 定义根路由
 def index():
     if not has_eridanus():
-        return render_template("setup.html")  # 返回 setup.html
+        return redirect("./setup.html")  # 返回 setup.html
     else:
-        return render_template("dashboard.html") # 返回 dashboard.html
+        return redirect("./setup.html") # 返回 dashboard.html
 
-@app.route("/yaml", methods=["GET"])
-def yaml_editor():
-    return render_template("yaml-editor.html")
+
 import base64
 
 @app.route("/api/file2base64", methods=["POST"])
+@auth
 def file_to_base64():
     """将本地文件转换为 Base64 并返回"""
     data = request.json
@@ -292,12 +386,23 @@ def file_to_base64():
 clients = set()
 
 async def handle_connection(websocket):
+    global auth_info
     print("WebSocket 客户端已连接")
     clients.add(websocket)
 
     try:
         # 发送连接成功消息
         #await websocket.send(json.dumps({'time': 1739849686, 'self_id': 3377428814, 'post_type': 'meta_event', 'meta_event_type': 'lifecycle', 'sub_type': 'connect'}))
+        while True:
+            # 鉴权，超时抛出异常，终止websocket连接
+            recv_token = await asyncio.wait_for(websocket.recv(),10)
+            recv_token = json.loads(recv_token)['auth_token']
+            try:
+                if auth_info[recv_token] > int(time.time()):
+                    print("WebSocket 客户端鉴权成功")
+                    break
+            except:
+                raise ValueError
 
         while True:
             # 接收来自前端的消息
@@ -350,6 +455,8 @@ async def handle_connection(websocket):
             print(f"已发送 OneBot v11 事件: {event_json}")
     except websockets.exceptions.ConnectionClosed as e:
         print(f"客户端连接关闭: {e}")
+    except ValueError:
+        print("WebSocket 客户端鉴权失败")
     finally:
         print("WebSocket 客户端断开连接")
         clients.remove(websocket)
@@ -374,6 +481,17 @@ def run_websocket_server():
 #启动Eridanus并捕获输出，反馈到前端。
 #不会写，不写！
 if __name__ == "__main__":
+    #初始化用户登录信息
+    try:
+        with open(user_file, 'r', encoding="utf-8") as file:
+            yaml_file = yaml.load(file)
+            user_info['account'] = yaml_file['account']
+            user_info['password'] = yaml_file['password']
+        print(f"用户登录信息读取成功。用户名：{user_info['account']}")
+    except:
+        print("用户登录信息读取失败，已恢复默认。默认用户名/密码：eridanus")
+        with open(user_file, 'w', encoding="utf-8") as file:
+            yaml.dump(user_info, file)
 
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         server_thread = threading.Thread(target=run_websocket_server, daemon=True)
