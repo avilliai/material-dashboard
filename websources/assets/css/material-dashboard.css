@@ -29274,10 +29274,16 @@ pre[class*=language-] {
   }
 }
 
-
 .dark-version .github-star .social-count {
   background-color: #000;
   color: #fff
 }
 
+:-webkit-autofill {
+  -webkit-text-fill-color: #000000cc !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+.dark-version :-webkit-autofill{
+  -webkit-text-fill-color: #ffffffcc !important;
+}
 /*# sourceMappingURL=dashboard-free.css.map */
