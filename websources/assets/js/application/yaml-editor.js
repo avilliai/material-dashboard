@@ -42,7 +42,10 @@ async function loadYamlFile(fileName) {
   if (data) {
     yamlData = data;
     console.log(yamlData);
-    renderYamlEditor(yamlData, yamlEditor);
+    if (data.error)
+      showAlert('alert-danger', data.error);
+    else
+      renderYamlEditor(yamlData, yamlEditor);
     yamlEditor.style.display = 'block';
     saveButton.style.display = 'inline-block';
   } else {
@@ -60,7 +63,7 @@ async function saveYamlFile() {
   if (result.message) {
     showAlert('alert-success', 'YAML保存成功');
   } else {
-    showAlert('alert-danger', 'YAML保存失败');
+    showAlert('alert-danger', result.error);
   }
 }
 
