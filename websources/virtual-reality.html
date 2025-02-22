@@ -11,6 +11,7 @@
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
   <link id="pagestyle" href="./assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
+  <link href="./assets/css/viewer.min.css" rel="stylesheet" />
   <style>
     .chat-container {
       height: calc(100vh - 250px);
@@ -314,6 +315,8 @@
         img.style.width = "100%"; // 让图片填充父容器
         img.style.borderRadius = "8px"; // 让图片更美观
 
+        img.style.cursor = "pointer";//鼠标放上去变点击
+        new Viewer(img,{url: 'src'});
         messageDiv.appendChild(img);
         chatContainer.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -577,7 +580,8 @@
     img.src = imagePath;
     img.style.width = "100%"; // 让图片填充父容器
     img.style.borderRadius = "8px"; // 让图片更美观
-
+    img.style.cursor = "pointer";//鼠标放上去变点击
+    new Viewer(img,{url: 'src'});
     messageDiv.appendChild(img);
     chatContainer.appendChild(messageDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -625,9 +629,8 @@
   <script src="./assets/js/core/bootstrap.min.js"></script>
   <script src="./assets/js/plugins/perfect-scrollbar.min.js"></script>
   <script src="./assets/js/plugins/smooth-scrollbar.min.js"></script>
-  <!-- <script src="./assets/js/plugins/chartjs.min.js"></script> -->
   <script src="./assets/js/material-dashboard.js?v=3.2.0"></script>
-  <script src="./assets/js/application/yaml-editor.js"></script>
+  <script src="./assets/js/viewer.min.js"></script>
   <script async defer src="https://buttons.github.io/buttons.js"></script>
 </body>
 </html>

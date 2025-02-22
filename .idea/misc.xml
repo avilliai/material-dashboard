@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="Python 3.13 (Eridanus-dashboard)" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (material-dashboard)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12 (water_filter)" project-jdk-type="Python SDK" />
 </project>
