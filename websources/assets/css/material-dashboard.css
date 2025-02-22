@@ -23088,16 +23088,6 @@ body.dark-version {
     cursor: pointer;
   }
 
-  .dropdown .dropdown-toggle:after,
-  .dropup .dropdown-toggle:after,
-  .dropstart .dropdown-toggle:after,
-  .dropend .dropdown-toggle:after {
-    content: "\f107";
-    font: normal normal normal 14px/1 FontAwesome;
-    border: none;
-    vertical-align: middle;
-    font-weight: 600;
-  }
 
   .dropdown .dropdown-toggle.show:after,
   .dropup .dropdown-toggle.show:after,
