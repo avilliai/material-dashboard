@@ -2,12 +2,11 @@
 import asyncio
 import functools
 import json
+import logging
+import shutil
+import sys
 import threading
-import time
-from collections import OrderedDict
-from dbm import error
-from email.quoprimime import decode
-from tkinter import Frame
+
 
 import websockets
 from flask import Flask, request, jsonify, render_template, make_response, redirect, url_for
@@ -18,18 +17,28 @@ from threading import Thread
 import subprocess
 import os
 import time
-
-
+import yaml
+from ruamel.yaml.scalarint import ScalarInt
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString, SingleQuotedScalarString
 
+from logger import get_logger
+with open("webui_config.yaml", "r", encoding="utf-8") as file:
+    config_data = yaml.safe_load(file)  # 解析 YAML 数据
+
+
+
+
 app = Flask(__name__,static_folder="websources", static_url_path="",template_folder='websources')
-CORS(app)  # 启用跨域支持
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)  # 只显示 ERROR 级别及以上的日志（隐藏 INFO 和 DEBUG）
+logger=get_logger()
+CORS(app,supports_credentials=True)  # 启用跨域支持
 custom_git_path = os.path.join("environments", "MinGit", "cmd", "git.exe")
 if os.path.exists(custom_git_path):
     git_path = custom_git_path
 else:
     git_path = "git"
-print(f"Git path: {git_path}")
+logger.info(f"Git path: {git_path}")
 
 #默认用户信息
 user_info = {
@@ -44,7 +53,7 @@ user_file = "./user_info.yaml"
 auth_info={}
 
 #会话有效时长，秒数为单位（暂时只对webui生效）
-auth_duration = 7200
+auth_duration = config_data["auth_duration"]
 #可用的git源
 REPO_SOURCES = [
    "https://ghfast.top/https://github.com/avilliai/Eridanus.git",
@@ -102,6 +111,9 @@ def merge_dicts(old, new):
             if isinstance(v, DoubleQuotedScalarString) or isinstance(v, SingleQuotedScalarString):
                 v = str(v)
                 new[k] = v
+            elif isinstance(v,ScalarInt):
+                v = int(v)
+                new[k] = v
             else:
                 print(f"类型冲突 key: {k}, old value type: {type(v)}, new value type: {type(new[k])}")
                 continue  # 跳过对新值的覆盖
@@ -114,7 +126,7 @@ def merge_dicts(old, new):
             print(f"移除键 key: {k}, value: {v}")
 
 def conflict_file_dealer(old_data: dict, file_new='new_aiReply.yaml'):
-    print(f"冲突文件处理: {file_new}")
+    logger.info(f"冲突文件处理: {file_new}")
 
     old_data=yaml.load(json.dumps(old_data))
     # 加载新的YAML文件
@@ -272,7 +284,7 @@ def clone_source():
     if os.path.exists("Eridanus"):
         return jsonify({"error": "Eridanus already exists。请删除现有Eridanus后再尝试克隆"}), 400
 
-    print(f"开始克隆: {source_url}")
+    logger.info_msg(f"开始克隆: {source_url}")
     os.system(f"{git_path} clone --depth 1 {source_url}")
 
     return jsonify({"message": f"开始部署 {source_url}"})
@@ -282,19 +294,19 @@ def login():
     global auth_info
     global auth_duration
     data = request.get_json()
-    print(data)
+    logger.info_msg(data)
     if data == user_info:
-        print("登录成功")
+        logger.info_msg("登录成功")
         auth_token = Fernet.generate_key().decode()      #生成token
         auth_expires = int(time.time()+auth_duration)    #生成过期时间
         auth_info[auth_token] = auth_expires             #加入字典
-        print(auth_info)
+        logger.info_msg(auth_info)
         resp = make_response(jsonify({"message":"Success","auth_token": auth_token}))
         resp.set_cookie("auth_token", auth_token)
         resp.set_cookie("auth_expires",str(auth_expires))
         return resp
     else:
-        print("登录失败")
+        logger.error("登录失败")
         return jsonify({"error": "Failed"}), 401
 
 # 登出api
@@ -304,10 +316,10 @@ def logout():
     recv_token = request.cookies.get('auth_token')
     try:
         del auth_info[recv_token]
-        print("用户登出")
+        logger.info_msg("用户登出")
         return jsonify({"message": "Success"})
     except:
-        print("token不存在")
+        logger.error("token不存在")
         return jsonify({"error": "Invalid token"})
 
 # 账户修改
@@ -320,7 +332,7 @@ def profile():
         return jsonify({"account": user_info['account']})
     elif request.method == 'POST':
         data = request.get_json()
-        print(data)
+        logger.info_msg(data)
         if data["account"]:
             user_info["account"] = data["account"]
         if data["password"]:
@@ -335,18 +347,18 @@ def index():
     if not has_eridanus():
         return redirect("./setup.html")  # 返回 setup.html
     else:
-        return redirect("./setup.html") # 返回 dashboard.html
+        return redirect("./dashboard.html") # 返回 dashboard.html
 
 
 import base64
 
 @app.route("/api/file2base64", methods=["POST"])
-@auth
 def file_to_base64():
     """将本地文件转换为 Base64 并返回"""
     data = request.json
+    print(data)
     file_path = data.get("path")
-
+    logger.info_func(f"转换文件: {file_path}")
     if not file_path:
         return jsonify({"error": "Missing file path"}), 400
 
@@ -361,39 +373,84 @@ def file_to_base64():
             base64_str = base64.b64encode(file.read()).decode("utf-8")
 
             file_extension = os.path.splitext(file_path)[1].lower()
-            if file_extension in ['.jpg', '.jpeg']:
-                mime_type = 'image/jpeg'
-            elif file_extension == '.png':
-                mime_type = 'image/png'
-            elif file_extension == '.gif':
-                mime_type = 'image/gif'
-            elif file_extension == '.mp3':
-                mime_type = 'audio/mpeg'
-            elif file_extension == '.wav':
-                mime_type = 'audio/wav'
-            elif file_extension == '.flac':
-                mime_type = 'audio/flac'
-            elif file_extension == '.mp4':
-                mime_type = 'video/mp4'
-            elif file_extension == '.webm':
-                mime_type = 'video/webm'
-            else:
+            mime_types = {
+                ".jpg": "image/jpeg",
+                ".jpeg": "image/jpeg",
+                ".png": "image/png",
+                ".gif": "image/gif",
+                ".mp3": "audio/mpeg",
+                ".wav": "audio/wav",
+                ".flac": "audio/flac",
+                ".mp4": "video/mp4",
+                ".webm": "video/webm",
+                ".pdf": "application/pdf",
+                ".zip": "application/zip",
+                ".txt": "text/plain",
+                ".json": "application/json",
+            }
+
+            mime_type = mime_types.get(file_extension)
+            if not mime_type:
                 return jsonify({"error": "Unsupported file type"}), 400
 
             return jsonify({"base64": f"data:{mime_type};base64,{base64_str}"})
+
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+if getattr(sys, 'frozen', False):  # 判断是否是 PyInstaller 打包的
+    BASE_DIR = sys._MEIPASS  # PyInstaller 临时解压目录
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # 普通运行环境
+
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "websources", "uploads")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # 确保目录存在
+
+@app.route("/api/move_file", methods=["POST"])
+def move_file():
+    """移动本地文件到可访问目录，并返回 URL"""
+    data = request.json
+    file_path = data.get("path")
+
+    if not file_path:
+        return jsonify({"error": "Missing file path"}), 400
+
+    if file_path.startswith("file://"):
+        file_path = file_path[7:]  # 去掉 "file://"
+
+    if not os.path.exists(file_path):
+        return jsonify({"error": "File not found"}), 404
+
+    try:
+        # 确保文件不会覆盖已有文件
+        filename = os.path.basename(file_path)
+        dest_path = os.path.join(UPLOAD_FOLDER, filename)
+
+        logger.info_msg(f"目标路径: {dest_path} 原始路径: {file_path}")
+        shutil.move(file_path, dest_path)  # 移动文件
+
+        # 生成可访问的 URL
+        relative_path = os.path.relpath(dest_path, app.static_folder)  # 计算相对路径
+        file_url = f"/{relative_path}"  # Flask 已去掉 static_url_path，所以直接返回相对路径
+        return jsonify({"url": file_url})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 clients = set()
 
 async def handle_connection(websocket):
     global auth_info
-    print("WebSocket 客户端已连接")
+    logger.info_msg("WebSocket 客户端已连接")
     clients.add(websocket)
 
     try:
         # 发送连接成功消息
         #await websocket.send(json.dumps({'time': 1739849686, 'self_id': 3377428814, 'post_type': 'meta_event', 'meta_event_type': 'lifecycle', 'sub_type': 'connect'}))
-        while True:
+        """while True:
             # 鉴权，超时抛出异常，终止websocket连接
             recv_token = await asyncio.wait_for(websocket.recv(),10)
             recv_token = json.loads(recv_token)['auth_token']
@@ -402,12 +459,12 @@ async def handle_connection(websocket):
                     print("WebSocket 客户端鉴权成功")
                     break
             except:
-                raise ValueError
+                raise ValueError"""
 
         while True:
             # 接收来自前端的消息
             message = await websocket.recv()
-            print(f"收到前端消息: {message} {type(message)}")
+            logger.info_msg(f"收到前端消息: {message} {type(message)}")
             message = json.loads(message)
             if "echo" in message:
                 for client in clients:
@@ -424,7 +481,7 @@ async def handle_connection(websocket):
 
                 message.insert(0,{'type': 'at', 'data': {'qq': '1000000', 'name': 'Eridanus'}})
 
-            print(message, type(message))
+            #print(message, type(message))
 
             onebot_event = {
                 'self_id': 1000000,
@@ -448,17 +505,17 @@ async def handle_connection(websocket):
 
             # 发送给所有连接的客户端（后端）
             for client in clients:
-                if client != websocket:  # 避免回传给前端
+                if client != websocket and "auth_token" not in message:  # 避免回传给前端
                     await client.send(event_json)
 
 
-            print(f"已发送 OneBot v11 事件: {event_json}")
+            logger.info_func(f"已发送 OneBot v11 事件: {event_json}")
     except websockets.exceptions.ConnectionClosed as e:
-        print(f"客户端连接关闭: {e}")
+        logger.error(f"客户端连接关闭: {e}")
     except ValueError:
-        print("WebSocket 客户端鉴权失败")
+        logger.error("WebSocket 客户端鉴权失败")
     finally:
-        print("WebSocket 客户端断开连接")
+        logger.error("WebSocket 客户端断开连接")
         clients.remove(websocket)
 
 # 启动 WebSocket 服务器
@@ -470,7 +527,7 @@ async def start_server():
         max_size=None  # 取消大小限制
     )
 
-    print("WebSocket 服务端已启动，在 5008 端口监听...")
+    logger.info_msg("WebSocket 服务端已启动，在 5008 端口监听...")
     await server.wait_closed()
 def run_websocket_server():
     loop = asyncio.new_event_loop()
@@ -482,22 +539,23 @@ def run_websocket_server():
 #不会写，不写！
 if __name__ == "__main__":
     #初始化用户登录信息
+
     try:
         with open(user_file, 'r', encoding="utf-8") as file:
             yaml_file = yaml.load(file)
             user_info['account'] = yaml_file['account']
             user_info['password'] = yaml_file['password']
-        print(f"用户登录信息读取成功。用户名：{user_info['account']}")
+        logger.info_msg(f"用户登录信息读取成功。用户名：{user_info['account']} ")
     except:
-        print("用户登录信息读取失败，已恢复默认。默认用户名/密码：eridanus")
+        logger.error("用户登录信息读取失败，已恢复默认。默认用户名/密码：eridanus")
         with open(user_file, 'w', encoding="utf-8") as file:
             yaml.dump(user_info, file)
 
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         server_thread = threading.Thread(target=run_websocket_server, daemon=True)
         server_thread.start()
-        print("WebSocket 服务器已在后台运行")
-    print("启动 Eridanus 主程序")
+        logger.info_msg("WebSocket 服务器已在后台运行")
+    print("启动 webui")
     print("浏览器访问 http://localhost:5007")
     print("浏览器访问 http://localhost:5007")
     print("浏览器访问 http://localhost:5007")

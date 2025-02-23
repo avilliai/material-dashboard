@@ -106,6 +106,7 @@ async function processMessage(msg) {
   let fileExtension = "";
   if (msg.data?.file) {
     let filePath = msg.data.file;
+    console.log("Calling convertFileToBase64 with path:", filePath); // 添加日志
     fileExtension = filePath.split('.').pop().toLowerCase(); // 获取文件后缀
   }
   // 处理 node（递归解析）
@@ -166,37 +167,16 @@ async function processMessage(msg) {
   if (msg.type === "file") {
     let filePath = msg.data.file;
 
-    // 处理 Windows 和 Linux 的 file:// 格式
     if (filePath.startsWith("file://")) {
-      filePath = filePath.replace("file:///", "").replace("file://", "");
+      filePath = await moveFile2Stastic(filePath);  // 获取可访问 URL
+      if (!filePath) return;
     }
 
-    const fileName = decodeURIComponent(filePath.split('/').pop()); // 解析文件名
+    console.log("添加文件消息:", filePath);
 
-    const link = document.createElement("span");
-    link.textContent = fileName; // 显示文件名
-    link.style.color = "blue";
-    link.style.textDecoration = "underline";
-    link.style.cursor = "pointer"; // 让它看起来像个可点击的链接
-
-    // 点击时，弹出提示框，并复制到剪贴板
-    link.addEventListener("click", () => {
-      navigator.clipboard.writeText(filePath).then(() => {
-        alert("文件路径已复制，请手动粘贴到浏览器打开：\n\n" + filePath);
-      }).catch(err => {
-        console.error("无法复制路径：", err);
-        alert("请手动复制文件路径：\n\n" + filePath);
-      });
-    });
-
-    const chatContainer = document.getElementById("chatContainer");
-    const messageDiv = document.createElement("div");
-    messageDiv.classList.add("message", "server-message");
-
-    messageDiv.appendChild(link);
-    chatContainer.appendChild(messageDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-
+    const fileName = filePath.split("/").pop();  // 获取文件名
+    addFileMessage(filePath, fileName);  // 显示下载链接
+    return;
   }
   console.warn("未知消息类型:", msg);
 }
@@ -204,7 +184,7 @@ async function processMessage(msg) {
 async function handleServerMessage(rawData) {
   try {
     const data = JSON.parse(rawData);
-
+    console.log("收到服务器消息:", data)
     if (!data.message || !data.message.params) {
       console.warn("收到无效消息:", data);
       return;
@@ -243,16 +223,27 @@ function addServerMessage(message) {
 
 
 async function convertFileToBase64(filePath) {
+  console.log("Calling convertFileToBase64 with path:", filePath);
   try {
+
+
     const response = await fetch("http://127.0.0.1:5007/api/file2base64", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: filePath })
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",  // 关键点：让浏览器发送 cookies
+      body: JSON.stringify({ path: filePath }),
     });
+
+    if (!response.ok) {
+      console.error("HTTP error:", response.status);
+      return null;
+    }
 
     const data = await response.json();
     if (data.base64) {
-      return data.base64;  // 返回 base64 数据
+      return data.base64;
     } else {
       console.error("Error:", data.error);
       return null;
@@ -262,6 +253,38 @@ async function convertFileToBase64(filePath) {
     return null;
   }
 }
+
+async function moveFile2Stastic(filePath) {
+  console.log("Calling moveFile2Stastic with path:", filePath);
+  try {
+    const response = await fetch("http://127.0.0.1:5007/api/move_file", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",  // 允许携带 Cookies
+      body: JSON.stringify({ path: filePath }),
+    });
+
+    if (!response.ok) {
+      console.error("HTTP error:", response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    if (data.url) {
+      return data.url;  // 返回可访问的 URL
+    } else {
+      console.error("Error:", data.error);
+      return null;
+    }
+  } catch (error) {
+    console.error("Request failed:", error);
+    return null;
+  }
+}
+
+
 function addVideoMessage(videoPath) {
   const chatContainer = document.getElementById("chatContainer");
   const messageDiv = document.createElement("div");
@@ -292,6 +315,25 @@ function addAudioMessage(audioPath) {
   chatContainer.appendChild(messageDiv);
   chatContainer.scrollTop = chatContainer.scrollHeight;
 }
+function addFileMessage(fileUrl, fileName) {
+  const chatContainer = document.getElementById("chatContainer");
+  const messageDiv = document.createElement("div");
+  messageDiv.classList.add("message", "server-message");
+
+  // 创建可点击跳转的 <a> 标签
+  const fileLink = document.createElement("a");
+  fileLink.href = fileUrl;
+  fileLink.textContent = fileName || "点击打开文件";
+  fileLink.target = "_blank";
+  fileLink.rel = "noopener noreferrer";
+  fileLink.style.color = "blue";  // 设置字体颜色
+
+  messageDiv.appendChild(fileLink);
+  chatContainer.appendChild(messageDiv);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+
 
 async function addImageMessage(imagePath) {
   if (imagePath.startsWith("file://")) {
