@@ -17,13 +17,11 @@ from threading import Thread
 import subprocess
 import os
 import time
-import yaml
 from ruamel.yaml.scalarint import ScalarInt
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString, SingleQuotedScalarString
 
 from logger import get_logger
-with open("webui_config.yaml", "r", encoding="utf-8") as file:
-    config_data = yaml.safe_load(file)  # 解析 YAML 数据
+
 
 
 
@@ -53,7 +51,7 @@ user_file = "./user_info.yaml"
 auth_info={}
 
 #会话有效时长，秒数为单位（暂时只对webui生效）
-auth_duration = config_data["auth_duration"]
+auth_duration=99999999
 #可用的git源
 REPO_SOURCES = [
    "https://ghfast.top/https://github.com/avilliai/Eridanus.git",
@@ -91,6 +89,11 @@ def auth(func):
 # 初始化 YAML 解析器（支持注释）
 yaml = YAML()
 yaml.preserve_quotes = True
+
+"""
+读取配置
+"""
+
 """
 新旧数据合并
 """
