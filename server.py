@@ -6,7 +6,7 @@ import logging
 import shutil
 import sys
 import threading
-
+from io import StringIO
 
 import websockets
 from flask import Flask, request, jsonify, render_template, make_response, redirect, url_for
@@ -51,7 +51,7 @@ user_file = "./user_info.yaml"
 auth_info={}
 
 #会话有效时长，秒数为单位（暂时只对webui生效）
-auth_duration=99999999
+auth_duration=720000
 #可用的git源
 REPO_SOURCES = [
    "https://ghfast.top/https://github.com/avilliai/Eridanus.git",
@@ -100,9 +100,10 @@ yaml.preserve_quotes = True
 
 def merge_dicts(old, new):
     """
-    递归合并旧数据和新数据
+    递归合并旧数据和新数据。
     """
     for k, v in old.items():
+        print(f"处理 key: {k}, old value: {v} old type: {type(v)}, new value: {new.get(k)} new type: {type(new.get(k))}")
         # 如果值是一个字典，并且键在新的yaml文件中，那么我们就递归地更新键值对
         if isinstance(v, dict) and k in new and isinstance(new[k], dict):
             merge_dicts(v, new[k])
@@ -111,15 +112,17 @@ def merge_dicts(old, new):
             # 合并列表并去重，保留旧列表顺序
             new[k] = [item for item in v if v is not None]
         elif k in new and type(v) != type(new[k]):
-            if isinstance(v, DoubleQuotedScalarString) or isinstance(v, SingleQuotedScalarString):
+
+            if isinstance(new[k], DoubleQuotedScalarString) or isinstance(new[k], SingleQuotedScalarString):
                 v = str(v)
                 new[k] = v
-            elif isinstance(v,ScalarInt):
+            elif isinstance(new[k],ScalarInt) or isinstance(v, ScalarInt):
                 v = int(v)
                 new[k] = v
             else:
                 print(f"类型冲突 key: {k}, old value type: {type(v)}, new value type: {type(new[k])}")
-                continue  # 跳过对新值的覆盖
+                logger.warning(f"旧值: {v}, 新值: {new[k]} 直接覆盖")
+                new[k] = v
         # 如果键在新的yaml文件中且类型一致，则更新值
         elif k in new:
             print(f"更新 key: {k}, old value: {v}, new value: {new[k]}")
@@ -131,7 +134,12 @@ def merge_dicts(old, new):
 def conflict_file_dealer(old_data: dict, file_new='new_aiReply.yaml'):
     logger.info(f"冲突文件处理: {file_new}")
 
-    old_data=yaml.load(json.dumps(old_data))
+    old_data_yaml_str = StringIO()
+    yaml.dump(old_data, old_data_yaml_str)
+    old_data_yaml_str.seek(0)  # 将光标移到字符串开头，以便后续读取
+
+    # 将 YAML 字符串加载回 ruamel.yaml 对象
+    old_data = yaml.load(old_data_yaml_str)
     # 加载新的YAML文件
     with open(file_new, 'r', encoding="utf-8") as file:
         new_data = yaml.load(file)
